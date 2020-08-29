@@ -1,0 +1,159 @@
+<config>
+<transformation id="1">
+    <name>Inject</name>
+    <engine>Pix2pixHD</engine>
+    <param name="object" type="fixed" check="1">vehicle</param>
+    <param name="orientation" type="fixed" check="0">In the front</param>
+    <param name="orientation" type="fixed" check="0">In the front</param>
+    <param name="location" type="input" check="0"></param>   
+    <running_script>python ../generators/pix2pixHD-master/image_control.py --checkpoints_dir ../models --name label2city --add_object car --feature ../generators/pix2pixHD-master/car.npy</running_script>
+</transformation>
+
+<transformation id="2">
+    <name>Inject</name>
+    <engine>Pix2pixHD</engine>
+    <param name="object" type="fixed" check="1">pedestrian</param>
+    <param name="orientation" type="fixed" check="0">In the front</param>
+    <param name="location" type="input" check="0"></param>   
+    <running_script>python ../generators/pix2pixHD-master/image_control.py --checkpoints_dir ../models --name label2city --add_object person --feature ../generators/pix2pixHD-master/person.npy</running_script>
+</transformation>
+
+<transformation id="3">
+    <name>Inject</name>
+    <engine>Pix2pixHD</engine>
+    <param name="object" type="fixed" check="1">bicycle</param>
+    <param name="orientation" type="fixed" check="0">In the front</param>
+    <param name="location" type="input" check="0"></param>   
+    <running_script>python ../generators/pix2pixHD-master/image_control.py --checkpoints_dir ../models --name label2city --add_object bicycle --feature ../generators/pix2pixHD-master/bicycle.npy --feature_ex ../generators/pix2pixHD-master/rider.npy</running_script>
+</transformation>
+
+<transformation id="4">
+    <name>Inject</name>
+    <engine>OpenCV</engine>
+    <param name="object" type="fixed" check="1">vehicle</param>
+    <param name="orientation" type="fixed" check="0">In the front</param>
+    <param name="location" type="input" check="0">50</param>   
+    <running_script></running_script>
+</transformation>
+
+<transformation id="5">
+    <name>Inject</name>
+    <engine>OpenCV</engine>
+    <param name="object" type="fixed" check="1">traffic sign</param>
+    <param name="orientation" type="fixed" check="0">At the roadside</param>
+    <param name="location" type="input" check="0"></param>   
+    <running_script></running_script>
+</transformation>
+
+<transformation id="6">
+    <name>ChangeWeather</name>
+    <engine>UNIT</engine>
+    <param name="weather" type="fixed" check="1">Day2night</param>
+    <running_script>python ../generators/UNIT/test_batch.py</running_script>
+</transformation>
+
+<transformation id="7">
+    <name>ChangeWeather</name>
+    <engine>UNIT</engine>
+    <param name="weather" type="fixed" check="1">Day2rain</param>
+    <running_script></running_script>
+</transformation>
+
+<transformation id="8">
+    <name>ChangeWeather</name>
+    <engine>OpenCV</engine>
+    <param name="weather" type="fixed" check="1">Day2rain</param>
+    <running_script>python ../generators/rainy.py</running_script>
+</transformation>
+
+<transformation id="9">
+    <name>ChangeWeather</name>
+    <engine>UGATIT</engine>
+    <param name="weather" type="fixed" check="1">Day2rain</param>
+    <running_script>python  ../generators/UGATIT/main.py --dataset day2rain --phase test --light True --img_size 224</running_script>
+</transformation>
+
+<!-- <transformation id="10">
+    <name>RemoveLine</name>
+    <engine>SCNN</engine>
+    <running_script>python ../generators/SCNN/gen.py</running_script>
+</transformation> -->
+
+<MUT>
+    <name>Epoch(Cityscapes)</name>
+    <class_name>Epoch</class_name>
+    <path></path>
+    <running_script></running_script>
+</MUT>
+
+<MUT>
+    <name>VGG16(Cityscapes)</name>
+    <class_name>vgg16</class_name>
+    <path></path>
+    <running_script></running_script>
+</MUT>
+
+<MUT>
+    <name>ResNet101(Cityscapes)</name>
+    <class_name>resnet101</class_name>
+    <path></path>
+    <running_script></running_script>
+</MUT>
+
+<!-- <MUT>
+    <name>Epoch(Udacity)</name>
+    <class_name>Epoch</class_name>
+    <path></path>
+    <running_script></running_script>
+</MUT>
+
+<MUT>
+    <name>VGG16(Udacity)</name>
+    <class_name>vgg16</class_name>
+    <path></path>
+    <running_script></running_script>
+</MUT>
+
+<MUT>
+    <name>Nvidia(Udacity)</name>
+    <class_name>nvidia</class_name>
+    <path></path>
+    <running_script></running_script>
+</MUT> -->
+
+<MUT>
+    <name>Epoch(A2D2)</name>
+    <class_name>Epoch_diff</class_name>
+    <path></path>
+    <running_script></running_script>
+</MUT>
+
+<MUT>
+    <name>VGG16(A2D2)</name>
+    <class_name>Vgg16_diff</class_name>
+    <path></path>
+    <running_script></running_script>
+</MUT>
+
+<MUT>
+    <name>ResNet101(A2D2)</name>
+    <class_name>Resnet101_diff</class_name>
+    <path></path>
+    <running_script></running_script>
+</MUT>
+
+<OTC>
+    <name>Cityscapes</name>
+    <path></path>
+</OTC>
+
+<!-- <OTC>
+    <name>Udacity</name>
+    <path></path>
+</OTC> -->
+
+<OTC>
+    <name>A2D2</name>
+    <path></path>
+</OTC>
+</config>
