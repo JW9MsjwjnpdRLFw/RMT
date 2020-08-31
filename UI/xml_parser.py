@@ -66,7 +66,7 @@ class OTCObject():
         self.path = args[1]
 
 def parse_new():
-    parser = et.parse("../rmt_new.xml")
+    parser = et.parse("rmt.xml")
     root = parser.getroot()
     transformation_list = []
     model_list = []

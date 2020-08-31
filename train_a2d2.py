@@ -1,7 +1,7 @@
 import matplotlib
 # matplotlib.use('Agg')
-from model import Epoch, weight_init, build_vgg16, build_resnet101, CNN3D, RNN, Vgg16_diff, EpochSingle, Resnet101_diff
-from data import A2D2Dataset,A2D23D, A2D2Diff, A2D2MT
+from model_a2d2 import Epoch, weight_init, build_vgg16, build_resnet101, RNN, Vgg16, Resnet101
+from data_a2d2 import A2D2Dataset,A2D23D, A2D2Diff, A2D2MT
 import torch.optim as optim
 import torch.nn as nn
 import torch
@@ -33,13 +33,11 @@ def auto_test():
 def test_mt(mt_path,model_name="vgg16"):
     device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
     if model_name == "vgg16":
-        model = Vgg16_diff()
+        model = Vgg16()
     elif model_name == "epoch":
         model = Epoch()
-    elif model_name == "CNN3D":
-        model = CNN3D(sequence_len=2)
     elif model_name == "resnet101":
-        model = Resnet101_diff()
+        model = Resnet101()
     model = nn.DataParallel(model, device_ids=[0, 1])
     model.load_state_dict(torch.load(model_name+'-30.pt'))
     model.to(device)
@@ -85,39 +83,17 @@ def test_mt(mt_path,model_name="vgg16"):
         df = pd.DataFrame({"timestamp":follow_up_test_dataset.timestamp_list[:-1],"source_speed": bg_speed,"label": label, "source_pred": source_pred, "follow_up_pred": follow_up_pred})
         df.to_csv(model_name+"_"+mt_path + "_100_self.csv", index=False)
 
-def test_model():
-    device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
-    # model = Epoch()
-    # model = Epoch() # epoch.pt
-    # model = CNN3D(sequence_len=2) # CNN3D-512.pt
-    model = Vgg16_diff()
-    # model = build_vgg16()
-    # model = Resnet101_diff()
-    model = nn.DataParallel(model, device_ids=[0, 1])
-    model.load_state_dict(torch.load('vgg16-20.pt'))
-    model.to(device)
-    test_composed = transforms.Compose([transforms.ToTensor()])
-    test_dataset = A2D2Diff(phase="test", transform=test_composed, root_path="..")
-    # test_dataset = A2D2Dataset(phase="test", transform=test_composed, root_path="..")
-    test_generator = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0)
-    test_loss = 0
+def test_model(model, device, test_generator):
+    # test_loss = 0
     y_pred = []
     y_true = []
-    criterion = nn.MSELoss()
+    # criterion = nn.L1Loss()
     test_loss = 0
     model.eval()
     with torch.no_grad():
         for i, sample_batched in enumerate(test_generator):
-            # batch_image = sample_batched[0]
-            # batch_y = sample_batched[1]
-            # batch_image = batch_image.type(torch.FloatTensor)
-            # batch_y = batch_y.type(torch.FloatTensor)
-            # batch_image = batch_image.to(device)
-            # batch_y = batch_y.to(device)
-            # outputs = model(batch_image).view(-1)
             batch_image = sample_batched[0]
             batch_speed = sample_batched[1]
-            # print(batch_x.numpy())
             batch_y = sample_batched[2]
 
             batch_image = batch_image.type(torch.FloatTensor)
@@ -131,47 +107,49 @@ def test_model():
             outputs = model((batch_image, batch_speed)).view(-1)
             y_pred.append(outputs.item())
             y_true.append(batch_y.item())
-            # loss = criterion(outputs, batch_y)
-            # running_loss = loss.item()
-            # test_loss += running_loss
-            # print(running_loss)
         y_pred = np.array(y_pred)
         y_true = np.array(y_true)
         mse = np.mean((y_pred - y_true)**2)
         mae = np.mean(np.abs(y_pred - y_true))
-        print(mse, mae)
-        # print(test_loss/i)
+        print("MAE loss:", mae)
+
 
 if __name__ == "__main__":
-    test = 1
-    if (test):
-        # test_model()
-        # test_mt("car_15")
-        auto_test()
-    else:
-        device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
-        # model = EpochSingle()
-        # model = build_vgg16(pretrained=False)
-        # model = CNN3D(sequence_len=2)
-        # model = Vgg16_diff(pretrained=False)
-        # model = Epoch()
-        # model = RNN()
+    parser = argparse.ArgumentParser(description="Training models")
+    parser.add_argument('--model_name', action='store', type=str, required=True)
+    parser.add_argument('--data_root', action='store', type=str, required=True)
+    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--epochs',  type=int, default=20)
+    parser.add_argument('--re_train', type=int, default=0)
+    parser.add_argument('--test', type=int, default=0)
+    args = parser.parse_args()
+    batch_size = args.batch_size
+    epochs = args.epochs
+    re_train = args.re_train
+    test = args.test
+
+    device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
+    model_name = args.model_name
+    if model_name == 'epoch':
+        model = Epoch()
+    elif model_name == 'vgg16':
+        model = Vgg16_diff(pretrained=False)
+    elif model_name == 'resnet101':
         model = Resnet101_diff()
-        # model.apply(weight_init)
-        model = nn.DataParallel(model, device_ids=[0, 1])
-        model.to(device)
+
+    model = nn.DataParallel(model, device_ids=[0, 1])
+    model.to(device)
+
+    if not test:
         train_composed = transforms.Compose([transforms.ToPILImage(), transforms.RandomHorizontalFlip(), transforms.ToTensor()])
         test_composed = transforms.Compose([transforms.ToTensor()])
-        train_dataset = A2D2Diff(phase="train", transform=test_composed, root_path="..")
-        validation_dataset = A2D2Diff(phase="validation", transform=test_composed, root_path="..")
-        # train_dataset = A2D2Dataset(phase="train", transform=test_composed, root_path="..")
-        # validation_dataset = A2D2Dataset(phase="validation", transform=test_composed, root_path="..")
+        train_dataset = A2D2Diff(phase="train", transform=test_composed, root_path=args.data_root)
+        validation_dataset = A2D2Diff(phase="validation", transform=test_composed, root_path=args.dataroot)
 
-        batch_size = 80
-        epochs = 30
+        batch_size = args.batch_size
+        epochs = args.epochs
         train_generator = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0, pin_memory=True)
-        test_generator = DataLoader(validation_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
-        # criterion = nn.MSELoss()
+        validation_generator = DataLoader(validation_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
         criterion = nn.L1Loss()
         params_to_update = []
         for name,param in model.named_parameters():
@@ -179,26 +157,18 @@ if __name__ == "__main__":
                 params_to_update.append(param)
 
         optimizer = optim.Adam(params_to_update, lr=0.001)
-        # optimizer = optim.SGD(params_to_update, lr=0.0001)
         exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
-
+        if re_train:
+            model.load_state_dict(torch.load('models/driving_models/' + model_name + '.pt'))
+        
         for epoch in range(epochs):
             exp_lr_scheduler.step()
             model.train()
             total_loss = 0
             for step, sample_batched in enumerate(train_generator):
-                # batch_image = sample_batched[0]
-                # batch_y = sample_batched[1]
-                # batch_image = batch_image.type(torch.FloatTensor)
-                # batch_y = batch_y.type(torch.FloatTensor)
-                # batch_image = batch_image.to(device)
-                # batch_y = batch_y.to(device)
-                # outputs = model(batch_image).view(-1)
                 batch_image = sample_batched[0]
                 batch_speed = sample_batched[1]
-                # print(batch_x.numpy())
                 batch_y = sample_batched[2]
-
                 batch_image = batch_image.type(torch.FloatTensor)
                 batch_speed = batch_speed.type(torch.FloatTensor)
                 batch_y = batch_y.type(torch.FloatTensor)
@@ -206,29 +176,22 @@ if __name__ == "__main__":
                 batch_speed = batch_speed.to(device)
 
                 batch_y = batch_y.to(device)
-
                 outputs = model((batch_image, batch_speed)).view(-1)
                 print("+", end="")
                 loss = criterion(outputs, batch_y)
                 optimizer.zero_grad()
-
                 loss.backward()
                 optimizer.step()
                 running_loss = loss.item()
                 total_loss += running_loss
                 if step % 10 == 0:
-                    print("Epoch %d Step %d MSE loss: %f" % (epoch, step, running_loss) )
-            test_loss = 0
+                    print("Epoch %d Step %d MSE loss: %f" % (epoch, step, running_loss))
+                
+            validation_loss = 0
             model.eval()
             with torch.no_grad():
-                for i, sample_batched in enumerate(test_generator):
-                    # batch_image = sample_batched[0]
-                    # batch_y = sample_batched[1]
-                    # batch_image = batch_image.type(torch.FloatTensor)
-                    # batch_y = batch_y.type(torch.FloatTensor)
-                    # batch_image = batch_image.to(device)
-                    # batch_y = batch_y.to(device)
-                    # outputs = model(batch_image).view(-1)
+                for i, sample_batched in enumerate(validation_generator):
+
                     batch_x = sample_batched[0]
                     batch_speed = sample_batched[1]
                     # print(batch_x.numpy())
@@ -247,12 +210,23 @@ if __name__ == "__main__":
                     print("-|", end="")
                     loss = criterion(outputs, batch_y)
                     running_loss = loss.item()
-                    test_loss += running_loss
-                    if (i == 1):
-                        print(batch_y)
-                        print(outputs)
-
-            # print(torch.mean(outputs), torch.min(outputs), torch.max(outputs))
-            print('Epoch %d  training RMSE loss: %.4f test loss: %.4f' % (epoch,  total_loss / step, test_loss / i))
+                    validation_loss += running_loss
+            print('Epoch %d  training RMSE loss: %.4f test loss: %.4f' % (epoch,  total_loss / step, validation_loss / i))
             if ((epoch + 1) % 10 == 0):
-                torch.save(model.state_dict(), 'resnet101-%d.pt' % (epoch+1))
+                torch.save(model.state_dict(), 'models/driving_models/' + model_name + '.pt')
+        
+        test_dataset = A2D2Diff(phase="test", transform=test_composed, root_path=args.dataroot)
+        test_generator = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0)
+
+        test_model(model, device, test_generator)
+    else:
+        model.load_state_dict(torch.load('models/driving_models/' + model_name + '.pt'))
+        test_composed = transforms.Compose([transforms.ToTensor()])
+        test_dataset = A2D2Diff(phase="test", transform=test_composed, root_path=args.dataroot)
+        test_generator = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0)
+
+        test_model(model, device, test_generator)
+
+
+
+

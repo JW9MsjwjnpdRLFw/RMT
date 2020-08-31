@@ -38,7 +38,7 @@ def parse_args():
 
     parser.add_argument('--input_path', type=str)
     parser.add_argument('--output_path', type=str)
-    parser.add_argument('--output_dict', type=str, default="../")
+    parser.add_argument('--x_n', type=str, default="../")
     return check_args(parser.parse_args())
 
 """checking arguments"""
@@ -80,7 +80,7 @@ def main():
         print(" [*] Training finished!")
 
     if args.phase == 'test' :
-        gan.generate(args.input_path, args.output_path, args.output_dict)
+        gan.generate(args.input_path, args.output_path, args.x_n)
         print(" [*] Test finished!")
 
 if __name__ == '__main__':

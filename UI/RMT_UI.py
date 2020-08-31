@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 from PIL import Image
-from config import *
+# from config import *
 import os
 import subprocess
 import cv2
@@ -44,25 +44,27 @@ def get_input_layout():
 
     param_layout = get_param_layout()
     transformation_layout = transformation_layout + param_layout
-    transformation_layout.append([sg.Button("Apply transformation")])
+    transformation_layout.append([sg.Text("Apply transformation for"),
+     sg.Combo(values=["X_N1", "X_N2"], key="trans_subject", size=(14,1), default_value="X_N1"),
+     sg.Button("Add the transformation")])
     input_layout = [
         [sg.Frame(layout = transformation_layout,
 
             title='Transformation setting', relief=sg.RELIEF_SUNKEN)],
         
         [sg.Frame(layout=[
-            [sg.Text("", size=(53, 1), key="Trans1")],
-            [sg.Text("", size=(53, 1),key="Trans2")]
+            [sg.Text("Transformations for X_N1: None", size=(45, 2), key="Trans1", text_color="red"), sg.Button("Remove Transformation", key="Remove1", visible=False)],
+            [sg.Text("Transformations for X_N2: None", size=(45, 2),key="Trans2", text_color="red"), sg.Button("Remove Transformation", key="Remove2", visible=False)],
             ],
             title='Transformations to apply', relief=sg.RELIEF_SUNKEN)],            
         
 
         [sg.Frame(layout=[
-            [sg.Text("Input pair (X_N1, X_N2):", size=(20, 1)), sg.Combo(("(Original image, Transformed image)", "(Transformed image 1, Transformed image 2)"), size=(30, 1), default_value="(Original image, Transformed image)", key="MRV_pair_type")],
+            # [sg.Text("Input pair (X_N1, X_N2):", size=(20, 1)), sg.Combo(("(Original image, Transformed image)", "(Transformed images 1 and 2)"), size=(30, 1), default_value="(Original image, Transformed image)", key="MRV_pair_type")],
             [sg.Text("Input dataset:", size=(20, 1)), sg.Combo(datasets, size=(30, 1), default_value=datasets[0], key="MRV_pair_data")],
             [sg.Text("Model:", size=(20, 1)), sg.Combo(models, size=(30, 1), default_value=models[0], key="MRV_MUT")],
             # [sg.Text("Inequation:", size=(20, 1)), sg.Combo(("decreaseRatio", "current", "deviation"), size=(20, 1), default_value="decreaseRatio", key="MRV_RF")],
-            [sg.Text("Inequation:", size=(20, 1)), sg.Input(key="MRV_RF", size=(30, 1), )],
+            [sg.Text("Higher order function:", size=(20, 1)), sg.Input(key="MRV_RF", size=(30, 1), )],
             # [sg.Text("Range:", size=(20, 1)), sg.Input(key="MRV_Range_low", size=(11, 1)), sg.Text("to", size=(5,1)), sg.Input(key="MRV_range_high", size=(11, 1))],
             ],
             title='MR setting', relief=sg.RELIEF_SUNKEN)],
@@ -240,7 +242,7 @@ if __name__ == "__main__":
             current_trans.engine = button
             update_param_status()
 
-        elif button == "Apply transformation":
+        elif button == "Add the transformation":
             if current_trans.name and current_trans.engine:
                 params_for_trans = {}
                 for trans in trans_params_all:
@@ -255,12 +257,30 @@ if __name__ == "__main__":
                 current_trans.running_script = get_running_script()
                 print(current_trans.running_script)
 
-                if len(selected_trans) == 0:
-                    input_window['Trans1'].update("%s, %s, %s" % \
-                         (current_trans.name, current_trans.engine, current_trans.params))
-                else:
-                    input_window['Trans2'].update("%s, %s, %s" % \
-                         (current_trans.name, current_trans.engine, current_trans.params))                        
+                if values["trans_subject"] == "X_N1":
+                    str_trans1 = input_window["Trans1"].DisplayText
+                    if "None" in str_trans1:
+                        str_trans1 = str_trans1.replace("None", "")
+                    str_trans1 += "(%s, %s, %s);" % (current_trans.name, current_trans.engine, current_trans.params)
+                    input_window["Trans1"].update(str_trans1)
+                    input_window["Remove1"].update(visible=True)
+                    input_window["Trans1"].SetTooltip(str_trans1)
+
+                elif values["trans_subject"] == "X_N2":
+                    str_trans2 = input_window["Trans2"].DisplayText
+                    if "None" in str_trans2:
+                        str_trans2 = str_trans2.replace("None", "")
+                    str_trans2 += "(%s, %s, %s);" % (current_trans.name, current_trans.engine, current_trans.params)
+                    input_window["Trans2"].update(str_trans2)  
+                    input_window["Remove2"].update(visible=True)
+                    input_window["Trans2"].SetTooltip(str_trans2)
+
+                # if len(selected_trans) == 0:
+                #     input_window['Trans1'].update("%s, %s, %s" % \
+                #          (current_trans.name, current_trans.engine, current_trans.params))
+                # else:
+                #     input_window['Trans2'].update("%s, %s, %s" % \
+                #          (current_trans.name, current_trans.engine, current_trans.params))                        
                 
                 selected_trans.append(current_trans)
                 current_trans = TransformationObject([None, None, None, None])

@@ -374,16 +374,6 @@ def gen_resize_data():
                     timestamp = image_info["cam_tstamp"]
                     cv2.imwrite(os.path.join(root_path, "camera_resize_new", folder, str(timestamp) + '.png'), resize_img)
 
-def gen_data_single(source_image, mask):
-    img = cv2.imread(source_image)
-    mask2 = np.zeros((mask.shape[0], mask.shape[1], 1))
-    mask2 = mask[:, :, 0:1] + mask[:, :, 1:2] + mask[:, :, 2:]
-    mask2[np.nonzero(mask2)] = 1
-    img = img - img*mask2
-    img = img + mask
-    img = img[161:1208, 442:1489]
-    resize_img = cv2.resize(img, (224, 224))     
-    return resize_img
 
 def gen_data(mask_file):
     if not os.path.exists(mask_file[:-4]):

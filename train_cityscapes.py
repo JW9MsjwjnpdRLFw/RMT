@@ -1,7 +1,7 @@
 import matplotlib
 matplotlib.use('Agg')
-from model import BaseCNN, Nvidia, Vgg16, build_vgg16, weight_init, build_resnet101, build_resnet
-from data import CityScapesDataset
+from model_cityscapes import BaseCNN, Nvidia, Vgg16, build_vgg16, weight_init, build_resnet101, build_resnet
+from data_cityscapes import CityScapesDataset
 import torch.optim as optim
 import torch.nn as nn
 import torch

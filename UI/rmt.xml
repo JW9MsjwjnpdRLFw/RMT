@@ -46,28 +46,28 @@
 </transformation>
 
 <transformation id="6">
-    <name>ChangeWeather</name>
+    <name>ChangeScene</name>
     <engine>UNIT</engine>
     <param name="weather" type="fixed" check="1">Day2night</param>
     <running_script>python ../generators/UNIT/test_batch.py</running_script>
 </transformation>
 
 <transformation id="7">
-    <name>ChangeWeather</name>
+    <name>ChangeScene</name>
     <engine>UNIT</engine>
     <param name="weather" type="fixed" check="1">Day2rain</param>
     <running_script></running_script>
 </transformation>
 
 <transformation id="8">
-    <name>ChangeWeather</name>
+    <name>ChangeScene</name>
     <engine>OpenCV</engine>
     <param name="weather" type="fixed" check="1">Day2rain</param>
     <running_script>python ../generators/rainy.py</running_script>
 </transformation>
 
 <transformation id="9">
-    <name>ChangeWeather</name>
+    <name>ChangeScene</name>
     <engine>UGATIT</engine>
     <param name="weather" type="fixed" check="1">Day2rain</param>
     <running_script>python  ../generators/UGATIT/main.py --dataset day2rain --phase test --light True --img_size 224</running_script>

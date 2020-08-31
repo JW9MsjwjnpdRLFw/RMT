@@ -9,60 +9,6 @@ import os
 import matplotlib.image as mpimg
 import numpy as np
 
-# class BaseCNN(nn.Module):
-#     def __init__(self):
-#         super(BaseCNN, self).__init__()
-#         self.layer1 = nn.Sequential(
-#             nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
-#             nn.InstanceNorm2d(32),
-#             nn.ReLU(),
-#             nn.MaxPool2d(kernel_size=2, stride=2),
-#             # nn.Dropout(0.25)
-#         )
-#         self.layer2 = nn.Sequential(
-#             nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
-#             nn.InstanceNorm2d(64),
-#             nn.ReLU(),
-#             nn.MaxPool2d(kernel_size=2, stride=2),
-
-#             # nn.Dropout(0.25)
-
-#         )
-#         self.layer3 = nn.Sequential(
-#             nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
-#             nn.InstanceNorm2d(128),
-#             nn.ReLU(),
-#             nn.MaxPool2d(kernel_size=2, stride=2),
-#             # nn.Dropout(0.25)
-
-#         )
-
-#         self.layer4 = nn.Sequential(
-#             nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
-#             nn.InstanceNorm2d(256),
-#             nn.ReLU(),
-#             nn.MaxPool2d(kernel_size=2, stride=2),
-#             # nn.Dropout(0.25)
-
-#         )
-#         self.layer5 = nn.Sequential(
-#             # nn.Linear(14*14*256, 1024),
-#             nn.Linear(256*8*8, 1024),
-
-#             nn.ReLU(),
-#             nn.Dropout(0.5),
-#             nn.Linear(1024, 1)
-#         )
-
-
-#     def forward(self, x):
-#         out = self.layer1(x)
-#         out = self.layer2(out)
-#         out = self.layer3(out)
-#         out = self.layer4(out)
-#         out = out.reshape(out.size(0), -1)
-#         out = self.layer5(out)
-#         return out
 class BaseCNN(nn.Module):
     def __init__(self):
         super(BaseCNN, self).__init__()
