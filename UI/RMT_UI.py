@@ -207,10 +207,33 @@ def mt_check(result_source, result_follow_up, relation_funtion, oracle_range):
         #         violation += 1
     return violation, len(result_source)
 
+def resize_img(dataset, x_n):
+    img_list = os.listdir(dataset.list)
+    for img_name in img_list:
+        img = cv2.imread(os.path.join(dataset.path, img_name))
+        if dataset.name == "A2D2":
+            img = img[161:1208, 442:1489]
+        img = cv2.resize(img, (dataset.img_size, dataset.img_size))
+        cv2.imwrite(os.path.join("../../test_images/" + x_n, img_name), img)
+
+def create_mt_set(dataset, transformations, x_n):
+    # resize_img(dataset, x_n)
+    if len(transformations) > 0:
+        for trans in transformations:
+            script = trans.running_script
+            for param in trans.params:
+                if param.check:
+                    script += " --%s %s" % (param.name, param.value)
+            script += " --dataset_path %s --output_path %s" % (dataset.path, "../../test_images/" + x_n)
+            print(script)
+
+
 if __name__ == "__main__":
     transformation_list, model_list, data_list = parse_new()
     transformations, engines, trans_params, trans_params_all, models, datasets = get_info(transformation_list, model_list, data_list)
     selected_trans = []
+    trans_for_x1 = []
+    trans_for_x2 = []
     input_window = sg.Window('Rule-based Metamorphic Testing').Layout(get_input_layout()) 
     current_trans = TransformationObject([None, None, None, None])
 
@@ -244,20 +267,29 @@ if __name__ == "__main__":
 
         elif button == "Add the transformation":
             if current_trans.name and current_trans.engine:
-                params_for_trans = {}
-                for trans in trans_params_all:
-                    if trans['trans'] == current_trans.name:
-                        for param_key in trans.keys():
-                            if param_key != 'trans' and 'type' not in param_key:
-                                params_for_trans[param_key] = values[trans['trans'] + '_' + param_key]
+                for transformation in transformation_list:
+                    if transformation.name == current_trans.name and transformation.engine == current_trans.engine:
+                        current_trans.params = transformation.params
+                        current_trans.running_script = transformation.running_script
                         break
+                for param in current_trans.params:
+                    param.value = values[current_trans.name + '_' + param.name]
+
+                # params_for_trans = {}
+                # for trans in trans_params_all:
+                #     if trans['trans'] == current_trans.name:
+                #         for param_key in trans.keys():
+                #             if param_key != 'trans' and 'type' not in param_key:
+                #                 params_for_trans[param_key] = values[trans['trans'] + '_' + param_key]
+                #         break
                 
-                current_trans.params = params_for_trans
+                # current_trans.params = params_for_trans
                 # get_running_script()
-                current_trans.running_script = get_running_script()
+                # current_trans.running_script = get_running_script()
                 print(current_trans.running_script)
 
                 if values["trans_subject"] == "X_N1":
+                    trans_for_x1.append(current_trans)
                     str_trans1 = input_window["Trans1"].DisplayText
                     if "None" in str_trans1:
                         str_trans1 = str_trans1.replace("None", "")
@@ -267,6 +299,7 @@ if __name__ == "__main__":
                     input_window["Trans1"].SetTooltip(str_trans1)
 
                 elif values["trans_subject"] == "X_N2":
+                    trans_for_x2.append(current_trans)
                     str_trans2 = input_window["Trans2"].DisplayText
                     if "None" in str_trans2:
                         str_trans2 = str_trans2.replace("None", "")
@@ -282,13 +315,20 @@ if __name__ == "__main__":
                 #     input_window['Trans2'].update("%s, %s, %s" % \
                 #          (current_trans.name, current_trans.engine, current_trans.params))                        
                 
-                selected_trans.append(current_trans)
+                # selected_trans.append(current_trans)
                 current_trans = TransformationObject([None, None, None, None])
                 reset_transformation_setting()
-        
+        elif button == "Remove1":
+            trans_for_x1 = []
+            input_window["Remove1"].update(visible=False)
+            input_window["Trans1"].update("Transformations for X_N1: None")
+        elif button == "Remove2":
+            trans_for_x2 = []
+            input_window["Remove2"].update(visible=False)
+            input_window["Trans2"].update("Transformations for X_N2: None")
         elif button == "Generate test":
             # read MRV settings
-            test_mode = values["MRV_pair_type"]
+            # test_mode = values["MRV_pair_type"]
             selected_dataset = None
             for dataset in data_list:
                 if dataset.name == values["MRV_pair_data"]:
@@ -300,60 +340,61 @@ if __name__ == "__main__":
                     selected_model = model
             
             relation_function = values["MRV_RF"]
-            oracle_range = [values["MRV_Range_low"], values["MRV_Range_high"]]
+            # oracle_range = [values["MRV_Range_low"], values["MRV_Range_high"]]
 
-            # create metamorphic test set and make model predictions
-            if test_mode == "(OTC, MTC)":
-                if len(selected_trans) == 1:
-                    input_path = selected_dataset.path
-                    output_path = "../MTC/MTC"
-                    script = selected_trans[0].running_script  + " --input_path {} --output_path {}".format(input_path, output_path)
-                    print(script)
-                    os.system(script)
-                    model_script1 = selected_model.running_script + " --model_name {} --model_path {} --input_path {}".format(selected_model.class_name, selected_model.path, os.path.join(output_path, "source_datasets"))
-                    model_script2 = selected_model.running_script + " --model_name {} --model_path {} --input_path {}".format(selected_model.class_name, selected_model.path, os.path.join(output_path, "follow_up_datasets"))
+            # create metamorphic test set X_N1 and X_N2
+            create_mt_set(selected_dataset, trans_for_x1, "x_n1")
+            # if test_mode == "(OTC, MTC)":
+            #     if len(selected_trans) == 1:
+            #         input_path = selected_dataset.path
+            #         output_path = "../MTC/MTC"
+            #         script = selected_trans[0].running_script  + " --input_path {} --output_path {}".format(input_path, output_path)
+            #         print(script)
+            #         os.system(script)
+            #         model_script1 = selected_model.running_script + " --model_name {} --model_path {} --input_path {}".format(selected_model.class_name, selected_model.path, os.path.join(output_path, "source_datasets"))
+            #         model_script2 = selected_model.running_script + " --model_name {} --model_path {} --input_path {}".format(selected_model.class_name, selected_model.path, os.path.join(output_path, "follow_up_datasets"))
 
 
-                elif len(selected_trans) == 2:
-                    add_trans = None
-                    change_trans = None
+            #     elif len(selected_trans) == 2:
+            #         add_trans = None
+            #         change_trans = None
 
-                    if selected_trans[0].name == "Inject":
-                        add_trans = selected_trans[0]
-                        change_trans = selected_trans[1]
-                    else:
-                        add_trans = selected_trans[1]
-                        change_trans = selected_trans[0]
+            #         if selected_trans[0].name == "Inject":
+            #             add_trans = selected_trans[0]
+            #             change_trans = selected_trans[1]
+            #         else:
+            #             add_trans = selected_trans[1]
+            #             change_trans = selected_trans[0]
                     
-                    input_Path = selected_dataset.path
-                    output_path = "../MTC/MTC"
-                    temp_output_path = "../MTC/temp"
+            #         input_Path = selected_dataset.path
+            #         output_path = "../MTC/MTC"
+            #         temp_output_path = "../MTC/temp"
 
-                    script1 = add_trans.running_script + " --input_path {} --output_path {}".format(input_path, temp_output_path)
-                    script2 = change_trans.running_script + " --input_path {} --output_path {}".format(os.path.join(temp_output_path, "follow_up_datasets"), output_path)
-                    os.system(script1)
-                    os.system(script2)
+            #         script1 = add_trans.running_script + " --input_path {} --output_path {}".format(input_path, temp_output_path)
+            #         script2 = change_trans.running_script + " --input_path {} --output_path {}".format(os.path.join(temp_output_path, "follow_up_datasets"), output_path)
+            #         os.system(script1)
+            #         os.system(script2)
 
-                    model_script1 = selected_model.running_script + " --model_name {} --model_path {} --input_path {}".format(selected_model.class_name, selected_model.path, os.path.join(output_path, "source_datasets"))
-                    model_script2 = selected_model.running_script + " --model_name {} --model_path {} --input_path {}".format(selected_model.class_name, selected_model.path, os.path.join(output_path, "follow_up_datasets"))
+            #         model_script1 = selected_model.running_script + " --model_name {} --model_path {} --input_path {}".format(selected_model.class_name, selected_model.path, os.path.join(output_path, "source_datasets"))
+            #         model_script2 = selected_model.running_script + " --model_name {} --model_path {} --input_path {}".format(selected_model.class_name, selected_model.path, os.path.join(output_path, "follow_up_datasets"))
 
-            elif test_mode == "(MTC1, MTC2)" and len(selected_trans) == 2:
-                input_path = selected_dataset.path
-                output_path1 = "../MTC/MTC1"
-                output_path2 = "../MTC/MTC2"
+            # elif test_mode == "(MTC1, MTC2)" and len(selected_trans) == 2:
+            #     input_path = selected_dataset.path
+            #     output_path1 = "../MTC/MTC1"
+            #     output_path2 = "../MTC/MTC2"
 
-                script1 = selected_trans[0].running_script  + " --input_path {} --output_path {}".format(input_path, output_path1)
-                script2 = selected_trans[1].running_script  + " --input_path {} --output_path {}".format(input_path, output_path2)
-                os.system(script1)
-                os.system(script2)
+            #     script1 = selected_trans[0].running_script  + " --input_path {} --output_path {}".format(input_path, output_path1)
+            #     script2 = selected_trans[1].running_script  + " --input_path {} --output_path {}".format(input_path, output_path2)
+            #     os.system(script1)
+            #     os.system(script2)
 
-                model_script1 = selected_model.running_script + " --model_name {} --model_path {} --input_path {}".format(selected_model.class_name, selected_model.path, os.path.join(output_path1, "follow_up_datasets"))
-                model_script2 = selected_model.running_script + " --model_name {} --model_path {} --input_path {}".format(selected_model.class_name, selected_model.path, os.path.join(output_path2, "follow_up_datasets"))
+            #     model_script1 = selected_model.running_script + " --model_name {} --model_path {} --input_path {}".format(selected_model.class_name, selected_model.path, os.path.join(output_path1, "follow_up_datasets"))
+            #     model_script2 = selected_model.running_script + " --model_name {} --model_path {} --input_path {}".format(selected_model.class_name, selected_model.path, os.path.join(output_path2, "follow_up_datasets"))
 
 
-            result_source = subprocess.check_output(model_script1)
-            result_source = str(result_source).split("\\n")[1][1:-1].split("]")[0].split(", ") 
-            result_follow_up = subprocess.check_output(model_script2)  
-            result_follow_up = str(result_follow_up).split("\\n")[1][1:-1].split("]")[0].split(", ") 
+            # result_source = subprocess.check_output(model_script1)
+            # result_source = str(result_source).split("\\n")[1][1:-1].split("]")[0].split(", ") 
+            # result_follow_up = subprocess.check_output(model_script2)  
+            # result_follow_up = str(result_follow_up).split("\\n")[1][1:-1].split("]")[0].split(", ") 
 
-            violation, total = mt_check(result_source, result_follow_up, relation_function, oracle_range)
+            # violation, total = mt_check(result_source, result_follow_up, relation_function, oracle_range)

@@ -32,8 +32,8 @@
     <engine>OpenCV</engine>
     <param name="object" type="fixed" check="1">vehicle</param>
     <param name="orientation" type="fixed" check="0">In the front</param>
-    <param name="location" type="input" check="0">50</param>   
-    <running_script></running_script>
+    <param name="location" type="input" check="1">50</param>   
+    <running_script>python ../generators/Opencv/add.py </running_script>
 </transformation>
 
 <transformation id="5">
@@ -145,6 +145,7 @@
 <OTC>
     <name>Cityscapes</name>
     <path></path>
+    <img_size></img_size>
 </OTC>
 
 <!-- <OTC>
@@ -154,6 +155,8 @@
 
 <OTC>
     <name>A2D2</name>
-    <path></path>
+    <path>E:\a2d2\camera_lidar_semantic\20181108_091945\camera\cam_front_center</path>
+    <img_size>224</img_size>
+
 </OTC>
 </config>
