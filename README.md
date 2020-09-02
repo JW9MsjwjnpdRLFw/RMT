@@ -105,7 +105,9 @@ python RMT_UI.py
 
 ![Framework GUI](asset/rmt_ui_new_1.png)
 
-In this interface, in the Metamorphic Rule field, please select `changing weather` for Transformation and `Day2rain(OpenCV)` for Weather. Then please select `Epoch(speed)` for Model Name and click the `Generate` button. After a few seconds, you can get the result of the metamorphic testing.
+In this interface, in the Transformation setting field, please select `ChangeScene` for Transformation and `Day2rain` for Weather. Then please select `X_N2` to apply transformation and click 'Add the transformation'. Next, in Mrsetting field select `A2D2` for Input dataset, `VGG16(A2D2)` for Model, and `0.1<((X_N1-X_N2)/X_N1)` for Higher order function. Finally, please click the `Generate test` button. After a few seconds, you can get the result of the metamorphic testing.
+
+<!-- ***这个地方要加一个对各个Rule的Higher order function*** -->
 
 ![Framework testing result](asset/rmt_result.png)
 
@@ -116,6 +118,18 @@ In this interface, in the Metamorphic Rule field, please select `changing weathe
 The framework takes a *rule* as the input. Based on the input, the framework would find the corresponding generator via `rmt.xml` that would be introduced later and call the generator to generate test sets. Then the framework will test driving models by test sets. We implemented the framework with a GUI.
 
 The user could select rules defined in our paper, the threshold, and the model that needs to test. The framework could automatically select the correorganized sponding generator. Then the framework would generate test sets and the GUI would display a pair of sample images (source image and follow-up image). Finally, the GUI would show the test result.
+
+For higher order function for each rule, we has few recommandation:
+In this paper, we express 7 Simple Rules (SR): 
+- **Rule 1**: M(X_N) < 60
+- **Rule 2**: M(X_N) < 30
+- **Rule 3**: 30 < (M(XN1) - M(XN2))=(M(XN1)) < 30
+- **Rule 4**: 40 < (M(XN1) - M(XN2))=(M(XN1)) < 50
+- **Rule 5**: 60 < (M(XN1) - M(XN2))=(M(XN1)) < 70
+- **Rule 6**: 0 < (M(XN1) - M(XN2))=(M(XN1)) < 10
+- **Rule 7**: 10 < (M(XN1) - M(XN2))=(M(XN1)) < 20
+- **Rule 8**: 0 < (M(XN1) - M(XN2))=(M(XN1)) < 45
+- **Rule 9**: (M(XN1) - M(XN2)) < 0
 
 ![Framework GUI](asset/rmt_ui_new_1.png)
 ![Framework testing result](asset/rmt_result.png)
