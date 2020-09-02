@@ -174,32 +174,6 @@ def reset_transformation_setting():
             if param_key != 'trans' and 'type' not in param_key:
                 input_window[trans['trans'] + '_' + param_key].update(disabled=True)
 
-def get_running_script():
-    # current_params = list(current_trans.params.keys())
-    # current_params.sort()
-
-    for trans in transformation_list:
-        if trans.name == current_trans.name and trans.engine == current_trans.engine:
-            print(1)
-            if len(current_trans.params) == 0 and len(trans.params) == 0:
-                running_script = trans.running_script
-                break
-
-            trans_params = {}
-            for param in trans.params:
-                if param.check == "1":
-                    trans_params[param.name] = param.value
-
-            match = True
-            for key, value in trans_params.items():
-                if key not in current_trans.params.keys() or current_trans.params[key] != value:
-                    match = False
-                    break
-            
-            if match:
-                running_script = trans.running_script
-
-    return running_script
 
 def make_predictions_a2d2(model, x_n1, x_n2):
     with torch.no_grad():
@@ -230,25 +204,6 @@ def make_predictions_a2d2(model, x_n1, x_n2):
             follow_up_pred.append(follow_up_output.item())
         return  source_pred, follow_up_pred
 
-def mt_check(result_source, result_follow_up, relation_funtion, oracle_range):
-    violation = 0
-    for prediction_source, prediction_follow in zip(result_source, result_follow_up):
-        prediction_source = float(prediction_source)
-        prediction_follow = float(prediction_follow)
-
-        if relation_function == "decreaseRatio":
-            if prediction_follow < prediction_source * (1 - oracle_range[1]) \
-                 or prediction_follow > prediction_source * (1 - oracle_range[0]):
-                violation += 1
-        elif relation_function == "current":
-            if prediction_follow < oracle_range[0] or prediction_follow > oracle_range[1]:
-                violation += 1
-        elif relation_function == "deviation":
-            if prediction_source - prediction_follow < oracle_range[0] or prediction_source - prediction_follow > oracle_range[1]:
-                violation += 1
-        # if prediction_follow < prediction_source * (1 - threshold_high) or prediction_follow > prediction_source * (1 - threshold_low):
-        #         violation += 1
-    return violation, len(result_source)
 
 def resize_img(dataset, x_n):
     if dataset.name == "A2D2":
@@ -296,7 +251,34 @@ def create_mt_set(dataset, transformations, x_n):
             os.system(script)
     # else:
     #     resize_img(dataset, x_n)
+def get_output_layout(mt_result):
+    img_list = os.listdir("../test_images/x_n1")[:3]
 
+    for i, img_name in enumerate(img_list):
+        Image.open(os.path.join("../test_images/x_n1", img_name)).save("source_{}.png".format(i))
+        Image.open(os.path.join("../test_images/x_n2", img_name)).save("follow_up_{}.png".format(i))
+
+    out_layout = [      
+        [sg.Text(mt_result)],
+            [sg.Frame(layout = [
+                # [sg.Image('original_1.png'),
+                #  sg.Image('original_2.png'),
+                #  sg.Image('original_3.png')]
+                [sg.Image("source_{}.png".format(i)) for i in range(3)]
+                 ], 
+                title  ='Original graph', relief =sg.RELIEF_SUNKEN)],
+            [sg.Frame(layout = [
+                # [sg.Image('result_1.png'),
+                #  sg.Image('result_2.png'),
+                #  sg.Image('result_3.png')]
+                [sg.Image("follow_up_{}.png".format(i)) for i in range(3)]
+
+                 ], 
+                title = 'Generated graph', relief =sg.RELIEF_SUNKEN)],
+        # [sg.Image('../source_datasets/orginal/1.jpg'), sg.Image('../follow_up_datasets/rainy/2.jpg')],      
+        [sg.OK(key="result_ok")]
+    ]
+    return out_layout
 
 if __name__ == "__main__":
     device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
@@ -416,8 +398,8 @@ if __name__ == "__main__":
             # oracle_range = [values["MRV_Range_low"], values["MRV_Range_high"]]
 
             # create metamorphic test set X_N1 and X_N2
-            create_mt_set(selected_dataset, trans_for_x1, "x_n1")
-            create_mt_set(selected_dataset, trans_for_x2, "x_n2")
+            # create_mt_set(selected_dataset, trans_for_x1, "x_n1")
+            # create_mt_set(selected_dataset, trans_for_x2, "x_n2")
 
             # load driving models 
             driving_model_module = __import__(selected_model.class_file)
@@ -448,6 +430,22 @@ if __name__ == "__main__":
                 if not relation_function(y1, y2):
                     violation += 1
             print(violation, total)
+            # display result window
+            mt_result = "{} out of {} violations were founded.".format(violation, total)
+            selected_dataset = None
+            selected_model = None
+            trans_for_x1 = []
+            trans_for_x2 = []
+            input_window.close()
+            out_window = sg.Window('show').Layout(get_output_layout(mt_result))   
+            button, values = out_window.Read()
+            if button == "result_ok":
+                out_window.close()
+                for i in range(3):
+                    os.remove("source_{}.png".format(i))
+                    os.remove("follow_up_{}.png".format(i))
+                input_window = sg.Window('Rule-based Metamorphic Testing').Layout(get_input_layout())              
+
             # if test_mode == "(OTC, MTC)":
             #     if len(selected_trans) == 1:
             #         input_path = selected_dataset.path
