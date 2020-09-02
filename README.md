@@ -14,13 +14,16 @@ RMT currently incorporates four kinds of graphics and image transformation engin
 
 Such pluggable transformation engines can be supplied by domain experts to express and test complex traffic rules, such as simultaneously changing the driving time to night time and injecting a pedestrian in front of a vehicle.
 
-In this paper, we express the following six rules: 
-1. Adding a vehicle in the front
-2. Adding a bicycle in the front
-3. Adding a pedestrian in the front
-4. Changing to night time
-5. Changing to rainy
-6. Removing lane lines
+In this paper, we express 7 Simple Rules (SR): 
+- **Rule 1**: Adding a vehicle *x* meters in front of the main vehicle should cause a deceleration to less than *t*
+- **Rule 2**: Adding a speed limit sign at the roadside will cause a deceleration to less than *t*.
+- **Rule 3-5**: Adding a vehicle/bicycle/pedestrian *x* meters in front of the main vehicle will cause a deceleration by *t<sub>1</sub>%* to *t<sub>2</sub>%*.
+- **Rule 6-7**: Changing the driving scenes to night time or rainy day will cause a deceleration by *t<sub>1</sub>%* to *t<sub>2</sub>%*.
+
+and 2 Composite Rules(CR):
+- **Rule 8**: Adding a vehicle *x* meters in front of the main vehicle and changing to rainy day will cause a deceleration by *t<sub>1</sub>%* to *t<sub>2</sub>%*.
+- **Rule 9**: Compared with adding a vehicle *x<sub>1</sub>* meters in front of the main vehicle, adding a vehicle *x<sub>2</sub>* meters (*x<sub>2</sub> < x<sub>1</sub>*) in front of the main vehicle will cause a bigger deceleration.
+
 
 Rules 1 - 5 are for testing speed prediction models. Rule 6 is to test steering angle prediction models. While Rules 1-5 are inequality metamorphic relations, Rule 6 is actually an equality metamorphic relation, created to check how partial disappearance of lanes affects steering angle prediction. 
 
