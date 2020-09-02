@@ -4,13 +4,16 @@
 
 This repository is for the paper [Rule-based metamorphic testing for autonomous driving model]().
 
-We propose a declarative, rule-based metamorphic testing approach called RMT. While existing techniques such as [DeepTest]() and [DeepRoad]() hardcode metamorphic relations (MRs), RMT enables domain experts to specify custom rules using a domain-specific language. RMT then translates each rule to a corresponding MR. It then injects meaningful input transformation entailed by the custom rule by leveraging pluggable input transformation engines. 
+We propose a declarative, rule-based metamorphic testing framework called **RMT**. It is the first to expand automated testing capability for autonomous vehicles by enabling easy mapping of traffic regulations to executable metamorphic relations and to demonstrate the benefits of *expressivity*, *customization*, and *pluggability*.
 
-RMT currently incorporates four kinds of graphics and image transformation engines: 
+It provides three components that work in concert: (1) a domain-specific language that enables an expert to express higher-order, compositional metamorphic relations, (2) pluggable transformation engines built on a variety of image and graphics processing techniques, and (3) automated test generation that translates a human-written rule to a corresponding executable, metamorphic relation and synthesizes meaningful inputs. 
+
+ <!-- While existing techniques such as [DeepTest]() and [DeepRoad]() hardcode metamorphic relations (MRs), RMT enables domain experts to specify custom rules using a domain-specific language. RMT then translates each rule to a corresponding MR. It then injects meaningful input transformation entailed by the custom rule by leveraging pluggable input transformation engines.  -->
+
+RMT currently incorporates three kinds of graphics and image transformation engines: 
 1. object insertion based on semantic labels, 
 2. affine transformations in Open CV, 
-3. image-to-image translation based on GANs, and 
-4. Spatial CNN based lane removal. 
+3. image-to-image translation based on GANs. 
 
 Such pluggable transformation engines can be supplied by domain experts to express and test complex traffic rules, such as simultaneously changing the driving time to night time and injecting a pedestrian in front of a vehicle.
 
@@ -25,12 +28,19 @@ and 2 Composite Rules(CR):
 - **Rule 9**: Compared with adding a vehicle *x<sub>1</sub>* meters in front of the main vehicle, adding a vehicle *x<sub>2</sub>* meters (*x<sub>2</sub> < x<sub>1</sub>*) in front of the main vehicle will cause a bigger deceleration.
 
 
-Rules 1 - 5 are for testing speed prediction models. Rule 6 is to test steering angle prediction models. While Rules 1-5 are inequality metamorphic relations, Rule 6 is actually an equality metamorphic relation, created to check how partial disappearance of lanes affects steering angle prediction. 
+*Rules 1* and *2*  are derived from traffic laws that give specific oracles (i.e., speed limits). Because they use a single transformation, *X<sub>N1</sub>* is always set to *X<sub>O</sub>*. *Rule 1* tests whether a driving model follows a safe driving distance regulation, when a vehicle appears in the front and close to the main vehicle. This is based on NSW Australia's traffic law (Figure XXX). To keep *3* seconds response time, there should be *50* meter distance from the front vehicle when the speed is above 60 km/h. Therefore, *M(X<sub>O</sub>)* should be no more than 60 km/h when a vehicle is located in the front less than 50 meters away from the main vehicle. *Rule 2* tests scenarios of seeing a speed limit sign. 
+
+*Rules 3* to *7* are designed based on traffic rules that specify required driving behavior in certain circumstances without specific speed oracles. For example, Texas traffic law requires drivers to ''slow down and increase the following distance when the road is wet''. Since the speed oracle is not specified, we quantify the required driving behavior as the speed decrease ratio in a range. *Rules 3*, *4* and *5* test anomalous scenarios where objects suddenly appear in the front and close to the main vehicle, which is similar to *Rule 1* but allow the injection of more types of objects. *Rules 6* and *7* test the impact of different driving scenes on speed.
+
+*Rules 8* and *9* are composite rules that compare the outcome of more than one transformation. Compared with the prior work that test relations between the original input and its modified input, **RMT** makes it easier to test the *compounding*, *proportional effect* of more than one transformation.
+
+
+<!-- Rules 1 - 5 are for testing speed prediction models. Rule 6 is to test steering angle prediction models. While Rules 1-5 are inequality metamorphic relations, Rule 6 is actually an equality metamorphic relation, created to check how partial disappearance of lanes affects steering angle prediction. 
 
 In RMT, more diverse rules can be generated by combining existing rules to cover more complex real-world scenarios. For example, Rule 1 can be combined with Rule 5 to generate images that add a vehicle in front of the main vehicle on a rainy day. In Section 3, we combine Rules 1-3 with Rule 5 to generate three more rules (Rules 7-9) to evaluate the benefits brought by such composite rules:
 7. Changing to rainy & Adding a vehicle in the front
 8. Changing to rainy & Adding a bicycle in the front
-9. Changing to rainy & Adding a pedestrian in the front
+9. Changing to rainy & Adding a pedestrian in the front -->
 
 ## Project architecture
 
@@ -71,28 +81,28 @@ In RMT, more diverse rules can be generated by combining existing rules to cover
 + Python libraries like OpenCV, PySimpleGUI, PIL, scipy==1.1.0, dominate.
 
 ## How to use RMT
-This Toturial will show you how to constract a metamorphic testing using UMT for the Rule 5: changing to rainy.
+This Tutorial will show you how to construct metamorphic testing using UMT for Rule 5: changing to rainy.
 
-At First, you need to download the `model_steer.zip` from google drive, and extract three models in it into the `./model` folder.
+First, you need to download the `model_steer.zip` from google drive and extract three models in it into the `./model` folder.
 ```https://drive.google.com/drive/u/1/folders/10xmtotVkSyFtwtCegmzscfQCabViJLbZ```
 
 Then for the dataset, we provided a small set in RMT, and we will use it in this tutorial. If you want to use the full set, please refer to the section **dataset**.
 
-To run RMT, you need to make sure that your have set up an enviroment same with the section **Prerequisites**.
+To run RMT, you need to make sure that you have set up an environment same with the section **Prerequisites**.
 
-Then you need to get into the `./UI` folder in the terminal
+Then you need to get into the `./UI` the folder in the terminal
 ```python
 cd ./UI
 ```
 
-In the `./UI` folder run the following code. Currently, this GUI has been test on **Windows** and **Linux**. 
+In the `./UI` folder run the following code. Currently, this GUI has been tested on **Windows** and **Linux**. 
 ```python
 python RMT_UI.py 
 ```
 
 ![Framework GUI](asset/main.png)
 
-In this interface, in the Metamorphic Rule field, please select `changing weather` for Transformation and `Day2rain(OpenCV)` for Weather. Then please select `Epoch(speed)` for Model Name and click the `Generate` button. After few seconds, you can get the result of the metamorphic testing.
+In this interface, in the Metamorphic Rule field, please select `changing weather` for Transformation and `Day2rain(OpenCV)` for Weather. Then please select `Epoch(speed)` for Model Name and click the `Generate` button. After a few seconds, you can get the result of the metamorphic testing.
 
 ![Framework testing result](asset/gui_result.png)
 
@@ -112,8 +122,8 @@ Also, users could change the configs of default rules or add new rules by clicki
 ![Framework configs](asset/configs.png)
 ![Framework newgenerator](asset/add_new_generator.png)
 
-Furthermore, the Input_path and Output_path refers to the relative path of the input and output folder of each generator, for example `../source_datasets/original` and `../follow_up_datasets/night`. However, for Pix2Pix generators, because of the special requirement of its model, the Input_path refers the root of its input folder, for example `../source_datasets`. The Output_path of Pix2Pix is same with other generators, which is the output folder of itself, for example, `./follow_up_datasets/add_car`.
-After transforming step, two folders will be generated in the Output_path to save the source image and generated image.
+Furthermore, the Input_path and Output_path refers to the relative path of the input and output folder of each generator, for example `../source_datasets/original` and `../follow_up_datasets/night`. However, for Pix2Pix generators, because of the special requirement of its model, the Input_path refers to the root of its input folder, for example `../source_datasets`. The Output_path of Pix2Pix is the same with other generators, which is the output folder of itself, for example, `./follow_up_datasets/add_car`.
+After the transforming step, two folders will be generated in the Output_path to save the source image and generated image.
 
 
 
@@ -153,9 +163,9 @@ The related dataset and pretrained models are saved in the Google Drive Folder:
 
   + Firstly, we use the dataset to train 3 autonomous driving E2E models with different CNN architectures for speed prediction. The inputs are driving scene images and the labels are speeds for each image provided in the dataset.
   + Secondly, we use the dataset to train Pix2pixHD GAN, which will be introduced in detail later.
-+ We use a part of images from BDD100K dataset to train UNIT GAN for transforming day-time driving scene to night time. We manually random select day-time and night time images to construct the dataset. The detail training process of UNIT could be seen in the [official github](https://github.com/mingyuliutw/UNIT).
++ We use a part of images from BDD100K dataset to train UNIT GAN for transforming day-time driving scenes to night time. We manually random select day-time and night time images to construct the dataset. The detailed training process of UNIT could be seen in the [official github](https://github.com/mingyuliutw/UNIT).
 
-+ The cityscape  dataset could be downloaded from ```https://www.cityscapes-dataset.com/```. Then the dataset should be re-organized as [pix2pixHD official github](https://github.com/NVIDIA/pix2pixHD) introduces. Before you use the dataset for `UNIT`, `OpenCV` and `UGATIT`, please run the following code to change the image into 224\*224. Please put the source dataset and the formatted dataset in the same root folder. If you use this dataset for `Pix2pix`, you do nnot need to make changes on this dataset.
++ The cityscape dataset could be downloaded from ```https://www.cityscapes-dataset.com/```. Then the dataset should be re-organized as [pix2pixHD official github](https://github.com/NVIDIA/pix2pixHD) introduces. Before you use the dataset for `UNIT`, `OpenCV` and `UGATIT`, please run the following code to change the image into 224\*224. Please put the source dataset and the formatted dataset in the same root folder. If you use this dataset for `Pix2pix`, you do not need to make changes on this dataset.
 
 ```python
 python image_crop.py --input_path <> --output_path <>
@@ -164,7 +174,7 @@ python image_crop.py --input_path <> --output_path <>
 
 ## Autonomous driving E2E model training
 
-In our experiments, we trained three different CNNs named Epoch (BaseCNN in code), VGG16, and Resnet101. Epoch is an architecture proposed in [Udacity Challenge 2](https://github.com/udacity/self-driving-car/blob/master/steering-models/community-models/cg23/epoch_model.py), we implemented the same architecture in Pytorch. VGG16 and Resnet101 are two classic transfer learning networks. We replaced their last classification layers with linear regression layers. The details could be seen in code `model.py`. 
+In our experiments, we trained three different CNNs named Epoch (BaseCNN in code), VGG16, and Resnet101. Epoch is an architecture proposed in [Udacity Challenge 2](https://github.com/udacity/self-driving-car/blob/master/steering-models/community-models/cg23/epoch_model.py), we implemented the same architecture in Pytorch. VGG16 and Resnet101 are two classic transfer learning networks. We replaced their last classification layers with linear regression layers. The details could be seen in the file `model.py`. 
 
 The `Cityscapes` dataset could be downloaded from the official website. `leftImg8bit_trainvaltest.zip`, and `vehicle_trainvaltest.zip` should be downloaded, unzipped, and organized as the following architecture. `train` and `val` folders store driving images from `leftImg8bit_trainvaltest.zip`. `vehicle` folder contains files from  `vehicle_trainvaltest.zip`
 
@@ -175,7 +185,7 @@ To train a driving model, running the command
 python train.py --model_name <> --data_root <> 
 ```
 
-`model_name` could be `epoch`, `vgg16`, or `resnet101`. `data_root` is the root path of your Cityscape dataset. Other optional parameters could be seen in code `train.py`.
+`model_name` could be `epoch`, `vgg16`, or `resnet101`. `data_root` is the root path of your Cityscape dataset. Other optional parameters could be seen in the file `train.py`.
 
 ## Pix2pixHD training
 
@@ -199,4 +209,4 @@ to generate learned features for each class at the instance level.
 
 ## Human evaluation
 
-We invited six people who have sufficient driving experiences to evaluate our testing result. We provided them the source test set and follow-up test set. They ranked the seasonality of the prediction change.  Images for human evaluation could be downloaded from [here](https://drive.google.com/open?id=1k7YURrxI4wJ2qETzy1GDagYR1FRjG-wW). And the link to the result of the human evaluation is [here](https://drive.google.com/open?id=1gVtA44abvsdjikQnvEVkoSJvh8tawyhC).
+We invited six people who have sufficient driving experiences to evaluate our testing results. We provided them the source test set and follow-up test set. They ranked the seasonality of the prediction change.  Images for human evaluation could be downloaded from [here](https://drive.google.com/open?id=1k7YURrxI4wJ2qETzy1GDagYR1FRjG-wW). And the link to the result of the human evaluation is [here](https://drive.google.com/open?id=1gVtA44abvsdjikQnvEVkoSJvh8tawyhC).
