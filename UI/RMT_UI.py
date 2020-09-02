@@ -5,7 +5,15 @@ import os
 import subprocess
 import cv2
 from xml_parser import updateGenerator, GeneratorObject, addGenerator, parse_new, TransformationObject, ParamObject
-
+import json
+import sys
+sys.path.append("..")
+from data_a2d2 import A2D2Diff, A2D2MT
+import importlib
+import torch.nn as nn
+import torch
+from torch.utils.data import DataLoader
+import copy
 
 THRESHOLD_LOW = 0.1
 THRESHOLD_HIGH = 0.2
@@ -124,6 +132,12 @@ def update_param_status():
             for param_key in trans.keys():
                 if param_key != 'trans' and 'type' not in param_key:
                     input_window[trans['trans'] + '_' + param_key].update(disabled=True)
+    
+    for trans in transformation_list:
+        if trans.name == current_trans.name and trans.engine == current_trans.engine:
+            for param in trans.params:
+                input_window[current_trans.name + '_' + param.name].update(param.value)
+            break
 
     # activate parameter settings of selected transformation
     for trans in trans_params:
@@ -187,6 +201,35 @@ def get_running_script():
 
     return running_script
 
+def make_predictions_a2d2(model, x_n1, x_n2):
+    with torch.no_grad():
+        bg_speed = []
+        label = []
+        source_pred = []
+        follow_up_pred = []
+        for i in range(len(x_n1)):
+            source_images = x_n1[i][0]
+            source_bg_speed = x_n1[i][1]
+            source_label = x_n1[i][2]
+
+            follow_up_images = x_n2[i][0]
+            follow_up_bg_speed = x_n2[i][1]
+            follow_up_label = x_n2[i][2]
+            label.append(source_label)
+            source_images = source_images.type(torch.FloatTensor)
+            follow_up_images = follow_up_images.type(torch.FloatTensor)
+            source_speed = torch.tensor(source_bg_speed).type(torch.FloatTensor)
+            follow_speed = torch.tensor(follow_up_bg_speed).type(torch.FloatTensor)
+            # print(source_speed, follow_speed)
+            source_input = (source_images.unsqueeze(0).to(device), source_speed.unsqueeze(0).to(device))
+            follow_up_input = (follow_up_images.unsqueeze(0).to(device), follow_speed.unsqueeze(0).to(device))
+            source_output = model(source_input)
+            follow_up_output = model(follow_up_input)
+            bg_speed.append(source_speed.mean().item())
+            source_pred.append(source_output.item())
+            follow_up_pred.append(follow_up_output.item())
+        return  source_pred, follow_up_pred
+
 def mt_check(result_source, result_follow_up, relation_funtion, oracle_range):
     violation = 0
     for prediction_source, prediction_follow in zip(result_source, result_follow_up):
@@ -208,27 +251,55 @@ def mt_check(result_source, result_follow_up, relation_funtion, oracle_range):
     return violation, len(result_source)
 
 def resize_img(dataset, x_n):
-    img_list = os.listdir(dataset.list)
-    for img_name in img_list:
-        img = cv2.imread(os.path.join(dataset.path, img_name))
-        if dataset.name == "A2D2":
-            img = img[161:1208, 442:1489]
-        img = cv2.resize(img, (dataset.img_size, dataset.img_size))
-        cv2.imwrite(os.path.join("../../test_images/" + x_n, img_name), img)
+    if dataset.name == "A2D2":
+        for d in os.listdir(dataset.path):
+            if 'png' in d:
+                img = cv2.imread(os.path.join(dataset.path, d))
+                img = img[161:1208, 442:1489]
+                resize_img = cv2.resize(img, (int(dataset.img_size), int(dataset.img_size)))
+                image_json = d[:-4] + '.json'
+                with open(os.path.join(dataset.path,image_json), 'r') as f:
+                    image_info = json.load(f)            
+                    timestamp = image_info["cam_tstamp"]
+                    # cv2.imwrite(os.path.join(root_path, "camera_resize", folder, str(timestamp) + '.png'), resize_img)
+                    cv2.imwrite(os.path.join("../test_images/" + x_n, str(timestamp) + '.png'), resize_img)
+
 
 def create_mt_set(dataset, transformations, x_n):
-    # resize_img(dataset, x_n)
-    if len(transformations) > 0:
-        for trans in transformations:
+    if len(transformations) == 0:
+        # resize_img(dataset, x_n)
+        pass
+    elif len(transformations) == 1:
+        script = transformations[0].running_script
+        for param in transformations[0].params:
+            if param.check == "1":
+                script += " --%s %s" % (param.name, param.value)
+        if transformations[0].name == "ChangeScene":
+            resize_img(dataset, x_n)
+            script += " --dataset_path %s --output_path %s" % ("../test_images/" + x_n, "../test_images/" + x_n)
+            os.system(script)
+        else:
+            script += " --dataset_path %s --output_path %s" % (dataset.path, "../test_images/" + x_n)
+            print(script)
+            os.system(script)
+    else:
+        for i, trans in enumerate(transformations):
             script = trans.running_script
             for param in trans.params:
-                if param.check:
+                if param.check == "1":
                     script += " --%s %s" % (param.name, param.value)
-            script += " --dataset_path %s --output_path %s" % (dataset.path, "../../test_images/" + x_n)
+            if i == 0:
+                script += " --dataset_path %s --output_path %s" % (dataset.path, "../test_images/" + x_n)
+            else:
+                script += " --dataset_path %s --output_path %s" % ("../test_images/" + x_n, "../test_images/" + x_n)
             print(script)
+            os.system(script)
+    # else:
+    #     resize_img(dataset, x_n)
 
 
 if __name__ == "__main__":
+    device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
     transformation_list, model_list, data_list = parse_new()
     transformations, engines, trans_params, trans_params_all, models, datasets = get_info(transformation_list, model_list, data_list)
     selected_trans = []
@@ -269,7 +340,7 @@ if __name__ == "__main__":
             if current_trans.name and current_trans.engine:
                 for transformation in transformation_list:
                     if transformation.name == current_trans.name and transformation.engine == current_trans.engine:
-                        current_trans.params = transformation.params
+                        current_trans.params = copy.deepcopy(transformation.params)
                         current_trans.running_script = transformation.running_script
                         break
                 for param in current_trans.params:
@@ -286,14 +357,17 @@ if __name__ == "__main__":
                 # current_trans.params = params_for_trans
                 # get_running_script()
                 # current_trans.running_script = get_running_script()
-                print(current_trans.running_script)
-
+                # print(current_trans.running_script)
+                current_param_str = {}
+                for param in current_trans.params:
+                    current_param_str[param.name] = param.value
                 if values["trans_subject"] == "X_N1":
                     trans_for_x1.append(current_trans)
                     str_trans1 = input_window["Trans1"].DisplayText
                     if "None" in str_trans1:
                         str_trans1 = str_trans1.replace("None", "")
-                    str_trans1 += "(%s, %s, %s);" % (current_trans.name, current_trans.engine, current_trans.params)
+
+                    str_trans1 += "(%s, %s, %s);" % (current_trans.name, current_trans.engine, current_param_str)
                     input_window["Trans1"].update(str_trans1)
                     input_window["Remove1"].update(visible=True)
                     input_window["Trans1"].SetTooltip(str_trans1)
@@ -303,7 +377,7 @@ if __name__ == "__main__":
                     str_trans2 = input_window["Trans2"].DisplayText
                     if "None" in str_trans2:
                         str_trans2 = str_trans2.replace("None", "")
-                    str_trans2 += "(%s, %s, %s);" % (current_trans.name, current_trans.engine, current_trans.params)
+                    str_trans2 += "(%s, %s, %s);" % (current_trans.name, current_trans.engine, current_param_str)
                     input_window["Trans2"].update(str_trans2)  
                     input_window["Remove2"].update(visible=True)
                     input_window["Trans2"].SetTooltip(str_trans2)
@@ -339,11 +413,41 @@ if __name__ == "__main__":
                 if model.name == values["MRV_MUT"]:
                     selected_model = model
             
-            relation_function = values["MRV_RF"]
             # oracle_range = [values["MRV_Range_low"], values["MRV_Range_high"]]
 
             # create metamorphic test set X_N1 and X_N2
             create_mt_set(selected_dataset, trans_for_x1, "x_n1")
+            create_mt_set(selected_dataset, trans_for_x2, "x_n2")
+
+            # load driving models 
+            driving_model_module = __import__(selected_model.class_file)
+            driving_model =  getattr(driving_model_module, selected_model.class_name)()
+            if selected_model.distributed == "1":
+                driving_model = nn.DataParallel(driving_model, device_ids=[0, 1])
+            
+            driving_model.load_state_dict(torch.load(selected_model.path))
+            driving_model = driving_model.to(device)
+            driving_model.eval()
+
+            # make predictions for mt sets
+            if selected_dataset.name == "A2D2":
+                split_path = selected_dataset.path.split(os.sep)
+                root_path = split_path[0]
+                for i in range(1, split_path.index('a2d2')+1):
+                    root_path += os.sep
+                    root_path += split_path[i]
+                # root_path = os.path.join(*split_path[:split_path.index('a2d2')+1])
+                mt_set_x1 = A2D2MT(root_path, mt_path="../test_images/x_n1", mode="self")
+                mt_set_x2 = A2D2MT(root_path, mt_path="../test_images/x_n2", mode="self")
+                pred_x1, pred_x2 = make_predictions_a2d2(driving_model, mt_set_x1, mt_set_x2)
+            # create metamorphic relation
+            relation_function = lambda X_N1, X_N2: eval(values["MRV_RF"])
+            total = len(pred_x1)
+            violation = 0
+            for (y1, y2) in zip(pred_x1, pred_x2):
+                if not relation_function(y1, y2):
+                    violation += 1
+            print(violation, total)
             # if test_mode == "(OTC, MTC)":
             #     if len(selected_trans) == 1:
             #         input_path = selected_dataset.path

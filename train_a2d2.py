@@ -133,9 +133,9 @@ if __name__ == "__main__":
     if model_name == 'epoch':
         model = Epoch()
     elif model_name == 'vgg16':
-        model = Vgg16_diff(pretrained=False)
+        model = Vgg16()
     elif model_name == 'resnet101':
-        model = Resnet101_diff()
+        model = Resnet101()
 
     model = nn.DataParallel(model, device_ids=[0, 1])
     model.to(device)

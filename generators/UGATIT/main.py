@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument('--benchmark_flag', type=str2bool, default=False)
     parser.add_argument('--resume', type=str2bool, default=False)
 
-    parser.add_argument('--input_path', type=str)
+    parser.add_argument('--dataset_path', type=str)
     parser.add_argument('--output_path', type=str)
     parser.add_argument('--x_n', type=str, default="../")
     return check_args(parser.parse_args())
@@ -80,7 +80,7 @@ def main():
         print(" [*] Training finished!")
 
     if args.phase == 'test' :
-        gan.generate(args.input_path, args.output_path, args.x_n)
+        gan.generate(args.dataset_path, args.output_path)
         print(" [*] Test finished!")
 
 if __name__ == '__main__':

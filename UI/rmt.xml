@@ -36,13 +36,31 @@
     <running_script>python ../generators/Opencv/add.py </running_script>
 </transformation>
 
+<transformation id="4">
+    <name>Inject</name>
+    <engine>OpenCV</engine>
+    <param name="object" type="fixed" check="1">pedestrian</param>
+    <param name="orientation" type="fixed" check="0">In the front</param>
+    <param name="location" type="input" check="0">50</param>   
+    <running_script>python ../generators/Opencv/add.py </running_script>
+</transformation>
+
+<transformation id="4">
+    <name>Inject</name>
+    <engine>OpenCV</engine>
+    <param name="object" type="fixed" check="1">bicycle</param>
+    <param name="orientation" type="fixed" check="0">In the front</param>
+    <param name="location" type="input" check="0">50</param>   
+    <running_script>python ../generators/Opencv/add.py </running_script>
+</transformation>
+
 <transformation id="5">
     <name>Inject</name>
     <engine>OpenCV</engine>
     <param name="object" type="fixed" check="1">traffic sign</param>
     <param name="orientation" type="fixed" check="0">At the roadside</param>
     <param name="location" type="input" check="0"></param>   
-    <running_script></running_script>
+    <running_script>python ../generators/Opencv/add.py </running_script>
 </transformation>
 
 <transformation id="6">
@@ -69,8 +87,15 @@
 <transformation id="9">
     <name>ChangeScene</name>
     <engine>UGATIT</engine>
-    <param name="weather" type="fixed" check="1">Day2rain</param>
+    <param name="weather" type="fixed" check="0">Day2rain</param>
     <running_script>python  ../generators/UGATIT/main.py --dataset day2rain --phase test --light True --img_size 224</running_script>
+</transformation>
+
+<transformation id="10">
+    <name>ChangeScene</name>
+    <engine>UGATIT</engine>
+    <param name="weather" type="fixed" check="0">Day2night</param>
+    <running_script>python  ../generators/UGATIT/main.py --dataset day2night --phase test --light True --img_size 224</running_script>
 </transformation>
 
 <!-- <transformation id="10">
@@ -80,24 +105,29 @@
 </transformation> -->
 
 <MUT>
-    <name>Epoch(Cityscapes)</name>
+    <name>Epoch(A2D2)</name>
     <class_name>Epoch</class_name>
-    <path></path>
-    <running_script></running_script>
+    <class_file>model_a2d2</class_file>
+    <path>../models/driving_models/epoch_a2d2.pt</path>
+    <distributed>1</distributed>
 </MUT>
 
 <MUT>
-    <name>VGG16(Cityscapes)</name>
-    <class_name>vgg16</class_name>
-    <path></path>
-    <running_script></running_script>
+    <name>VGG16(A2D2)</name>
+    <class_name>Vgg16</class_name>
+    <class_file>model_a2d2</class_file>
+    <path>../models/driving_models/vgg16_a2d2.pt</path>
+    <distributed>1</distributed>
+
 </MUT>
 
 <MUT>
-    <name>ResNet101(Cityscapes)</name>
-    <class_name>resnet101</class_name>
-    <path></path>
-    <running_script></running_script>
+    <name>ResNet101(A2D2)</name>
+    <class_file>model_a2d2</class_file>
+    <class_name>Resnet101</class_name>
+    <path>../models/driving_models/resnet101_a2d2.pt</path>
+    <distributed>1</distributed>
+
 </MUT>
 
 <!-- <MUT>
@@ -122,24 +152,31 @@
 </MUT> -->
 
 <MUT>
-    <name>Epoch(A2D2)</name>
+    <name>Epoch(Cityscapes)</name>
     <class_name>Epoch_diff</class_name>
+    <class_file>model_a2d2</class_file>
+    <distributed>0</distributed>
+
     <path></path>
-    <running_script></running_script>
+
 </MUT>
 
 <MUT>
-    <name>VGG16(A2D2)</name>
+    <name>VGG16(Cityscapes)</name>
     <class_name>Vgg16_diff</class_name>
+    <class_file>model_a2d2</class_file>
+    <distributed>0</distributed>
+    
     <path></path>
-    <running_script></running_script>
 </MUT>
 
 <MUT>
-    <name>ResNet101(A2D2)</name>
+    <name>ResNet101(Cityscapes)</name>
     <class_name>Resnet101_diff</class_name>
+    <class_file>model_a2d2</class_file>
+    <distributed>0</distributed>
+
     <path></path>
-    <running_script></running_script>
 </MUT>
 
 <OTC>

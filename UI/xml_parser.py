@@ -57,13 +57,15 @@ class MUTObject():
     def __init__(self, args):
         self.name = args[0]
         self.class_name = args[1]
-        self.path = args[2]
-        self.running_script = args[3]
+        self.class_file = args[2]
+        self.path = args[3]
+        self.distributed = args[4]
 
 class OTCObject():
     def __init__(self, args):
         self.name = args[0]
         self.path = args[1]
+        self.img_size = args[2]
 
 def parse_new():
     parser = et.parse("rmt.xml")
@@ -87,15 +89,17 @@ def parse_new():
     for node in root.findall("MUT"):
         name = node.find("name").text
         class_name = node.find("class_name").text
+        class_file = node.find("class_file").text
+        distributed = node.find("distributed").text
         path = node.find("path").text
-        running_script = node.find("running_script").text
-        MUT = MUTObject([name, class_name, path, running_script])
+        MUT = MUTObject([name, class_name, class_file, path, distributed])
         model_list.append(MUT)
 
     for node in root.findall("OTC"):
         name = node.find("name").text
         path = node.find("path").text
-        OTC = OTCObject([name, path])
+        img_size = node.find("img_size").text
+        OTC = OTCObject([name, path, img_size])
         data_list.append(OTC)
 
     return transformation_list, model_list, data_list

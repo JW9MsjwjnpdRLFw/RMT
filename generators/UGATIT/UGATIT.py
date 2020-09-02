@@ -415,7 +415,7 @@ class UGATIT(object) :
 
             cv2.imwrite(os.path.join(self.result_dir, self.dataset, 'test', 'B2A_%d.png' % (n + 1)), B2A * 255.0)
 
-    def generate(self, source_dir, output_path, output_dict):
+    def generate(self, source_dir, output_path):
         model_list = glob(os.path.join(self.result_dir, self.dataset, 'model', '*.pt'))
         print(os.path.join(self.result_dir, self.dataset, 'model', '*.pt'))
         print(model_list)
@@ -439,19 +439,37 @@ class UGATIT(object) :
         self.genB2A.eval()
         
         
-        if not os.path.exists(os.path.join(output_path, 'source_datasets')):
-            os.makedirs(os.path.join(output_path, 'source_datasets'))
-        print("mkdir")
-        if not os.path.exists(os.path.join(output_path, 'follow_up_datasets')):
-            os.makedirs(os.path.join(output_path, 'follow_up_datasets'))
-        
-        for n, (real_A, _) in enumerate(gen_loader):
-            real_A = real_A.to(self.device)
+        # if not os.path.exists(os.path.join(output_path, 'source_datasets')):
+        #     os.makedirs(os.path.join(output_path, 'source_datasets'))
+        # print("mkdir")
+        # if not os.path.exists(os.path.join(output_path, 'follow_up_datasets')):
+        #     os.makedirs(os.path.join(output_path, 'follow_up_datasets'))
+        source_images = os.listdir(source_dir)
+        for  img_name in source_images:
+            img = cv2.imread(os.path.join(source_dir, img_name))
+            img = cv2.resize(img, (self.img_size, self.img_size))
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            # img = torch.from_numpy(img)
+            img = transforms.ToTensor()(img)
+            img = img.unsqueeze(0)
+            # print(img.size())
+        # for n, (real_A, _) in enumerate(gen_loader):
+            # print(real_A.size())
+            real_A = img.to(self.device)
 
             fake_A2B, _, fake_A2B_heatmap = self.genA2B(real_A)
 
-            print(os.path.join(output_path, 'source_datasets'))
-            print(os.path.join(output_path, 'follow_up_datasets'))
+            
+            cv2.imwrite(os.path.join(output_path, '%s' % (img_name)), RGB2BGR(tensor2numpy(denorm(real_A[0]))) * 255.0)
+            cv2.imwrite(os.path.join(output_path,  '%s' % (img_name)), RGB2BGR(tensor2numpy(denorm(fake_A2B[0]))) * 255.0) 
 
-            cv2.imwrite(os.path.join(output_path, 'source_datasets', '%d.jpg' % (n)), RGB2BGR(tensor2numpy(denorm(real_A[0]))) * 255.0)
-            cv2.imwrite(os.path.join(output_path, 'follow_up_datasets',  '%d.jpg' % (n)), RGB2BGR(tensor2numpy(denorm(fake_A2B[0]))) * 255.0)   
+        # for n, (real_A, _) in enumerate(gen_loader):
+        #     real_A = real_A.to(self.device)
+
+        #     fake_A2B, _, fake_A2B_heatmap = self.genA2B(real_A)
+
+        #     # print(os.path.join(output_path, 'source_datasets'))
+        #     # print(os.path.join(output_path, 'follow_up_datasets'))
+
+        #     cv2.imwrite(os.path.join(output_path, '%d.png' % (n)), RGB2BGR(tensor2numpy(denorm(real_A[0]))) * 255.0)
+        #     cv2.imwrite(os.path.join(output_path, '%d.png' % (n)), RGB2BGR(tensor2numpy(denorm(fake_A2B[0]))) * 255.0)   

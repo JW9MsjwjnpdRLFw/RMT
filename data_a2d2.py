@@ -272,21 +272,20 @@ class A2D2Dataset(Dataset):
         return img, label
 
 class A2D2MT(Dataset):
-    def __init__(self, root_path, source_path=None, mt_path=None, mode="compare"):
+    def __init__(self, root_path, source_path=None, mt_path=None, mode="compare", folder="20181108_091945"):
         self.mt_path = mt_path
         self.root_path = root_path
         self.source_path = source_path
         self.mode = mode
         self.timestamp_list = []
-        self.image_list, self.speed_list, self.label_list = self.get_data_list()
+        self.image_list, self.speed_list, self.label_list = self.get_data_list(folder)
 
     def __len__(self):
         return len(self.image_list)
-    def get_data_list(self):
+    def get_data_list(self, folder):
         image_list = []
         speed_list = []
         label_list = []
-        folder = "20181108_091945"
         # mt_folder = self.mt_path
         folder_images = {}
         labels = {}

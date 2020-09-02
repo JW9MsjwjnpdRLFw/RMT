@@ -3,8 +3,6 @@ import sys
 import argparse
 import numpy as np
 import os
-sys.path.append("../..")
-from data_a2d2 import A2D2MT
 import json
 
 def gen_data_single(source_image, mask):
@@ -19,8 +17,6 @@ def gen_data_single(source_image, mask):
     return resize_img
 
 def gen_data(mask_file, dataset_path, output_path, img_size=(224, 224)):
-    if not os.path.exists(output_path + x_n):
-        os.mkdir(output_path + x_n)
     # root_path = "E:\\a2d2\\camera_lidar_semantic\\%s\\camera\\cam_front_center" % dataset_path
     mask = cv2.imread(mask_file)
     # mask = np.concatenate([mask, np.zeros((1208, 150, 3))],axis=1)
@@ -41,7 +37,8 @@ def gen_data(mask_file, dataset_path, output_path, img_size=(224, 224)):
                 image_info = json.load(f)            
                 timestamp = image_info["cam_tstamp"]
                 # cv2.imwrite(os.path.join(root_path, "camera_resize", folder, str(timestamp) + '.png'), resize_img)
-                cv2.imwrite(os.path.join(output_path, mask_file[:-4], str(timestamp) + '.png'), resize_img)
+                cv2.imwrite(os.path.join(output_path, str(timestamp) + '.png'), resize_img)
+                print(os.path.join(output_path, str(timestamp) + '.png'))
 
 
 if __name__ == "__main__":
@@ -57,12 +54,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.object == "pedestrian":
-        mask = "person_50.png"
+        mask = "../generators/OpenCV/person_50.png"
     elif args.object == "bicycle":
-        mask = "bicycle_50.png"
+        mask = "../generators/OpenCV/bicycle_50.png"
     elif args.object == "vehicle":
         if args.location == 50:
-            mask = "car_50.png"
+            mask = "../generators/OpenCV/car_50.png"
         elif args.location == 30:
-            mask = "car_30.png"
+            mask = "../generators/OpenCV/car_30.png"
+    print(mask)
     gen_data(mask, args.dataset_path,args.output_path, args.img_size)

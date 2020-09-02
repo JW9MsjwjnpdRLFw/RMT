@@ -146,7 +146,7 @@ class Epoch(nn.Module):
         return out
 
 class Resnet101(nn.Module):
-    def __init__(self, pretrained=True):
+    def __init__(self, pretrained=False):
         super(Resnet101, self).__init__()
         self.model = models.resnet101(pretrained=pretrained)
         if pretrained:
@@ -181,7 +181,7 @@ class Resnet101(nn.Module):
         return out        
 
 class Vgg16(nn.Module):
-    def __init__(self, pretrained=True):
+    def __init__(self, pretrained=False):
         super(Vgg16, self).__init__()
         self.model = models.vgg16(pretrained=pretrained)
         if pretrained:
