@@ -6,7 +6,9 @@ This repository is for the paper [Rule-based metamorphic testing for autonomous 
 
 We propose a declarative, rule-based metamorphic testing framework called **RMT**. It is the first to expand automated testing capability for autonomous vehicles by enabling easy mapping of traffic regulations to executable metamorphic relations and to demonstrate the benefits of *expressivity*, *customization*, and *pluggability*.
 
-It provides three components that work in concert: (1) a domain-specific language that enables an expert to express higher-order, compositional metamorphic relations, (2) pluggable transformation engines built on a variety of image and graphics processing techniques, and (3) automated test generation that translates a human-written rule to a corresponding executable, metamorphic relation and synthesizes meaningful inputs. 
+![RMT overview](asset/rmt_overview_2.png)
+
+It provides three components that work in concert: (1) a **domain-specific language** that enables an expert to express higher-order, compositional metamorphic relations, (2) **pluggable transformation engines** built on a variety of image and graphics processing techniques, and (3) **automated test generation** that translates a human-written rule to a corresponding executable, metamorphic relation and synthesizes meaningful inputs. 
 
  <!-- While existing techniques such as [DeepTest]() and [DeepRoad]() hardcode metamorphic relations (MRs), RMT enables domain experts to specify custom rules using a domain-specific language. RMT then translates each rule to a corresponding MR. It then injects meaningful input transformation entailed by the custom rule by leveraging pluggable input transformation engines.  -->
 
@@ -27,12 +29,13 @@ and 2 Composite Rules(CR):
 - **Rule 8**: Adding a vehicle *x* meters in front of the main vehicle and changing to rainy day will cause a deceleration by *t<sub>1</sub>%* to *t<sub>2</sub>%*.
 - **Rule 9**: Compared with adding a vehicle *x<sub>1</sub>* meters in front of the main vehicle, adding a vehicle *x<sub>2</sub>* meters (*x<sub>2</sub> < x<sub>1</sub>*) in front of the main vehicle will cause a bigger deceleration.
 
+*For detailed introductions to each rules, please refer to the paper.*
 
-*Rules 1* and *2*  are derived from traffic laws that give specific oracles (i.e., speed limits). Because they use a single transformation, *X<sub>N1</sub>* is always set to *X<sub>O</sub>*. *Rule 1* tests whether a driving model follows a safe driving distance regulation, when a vehicle appears in the front and close to the main vehicle. This is based on NSW Australia's traffic law (Figure XXX). To keep *3* seconds response time, there should be *50* meter distance from the front vehicle when the speed is above 60 km/h. Therefore, *M(X<sub>O</sub>)* should be no more than 60 km/h when a vehicle is located in the front less than 50 meters away from the main vehicle. *Rule 2* tests scenarios of seeing a speed limit sign. 
+<!-- *Rules 1* and *2*  are derived from traffic laws that give specific oracles (i.e., speed limits). Because they use a single transformation, *X<sub>N1</sub>* is always set to *X<sub>O</sub>*. *Rule 1* tests whether a driving model follows a safe driving distance regulation, when a vehicle appears in the front and close to the main vehicle. This is based on NSW Australia's traffic law (Figure XXX). To keep *3* seconds response time, there should be *50* meter distance from the front vehicle when the speed is above 60 km/h. Therefore, *M(X<sub>O</sub>)* should be no more than 60 km/h when a vehicle is located in the front less than 50 meters away from the main vehicle. *Rule 2* tests scenarios of seeing a speed limit sign. 
 
 *Rules 3* to *7* are designed based on traffic rules that specify required driving behavior in certain circumstances without specific speed oracles. For example, Texas traffic law requires drivers to ''slow down and increase the following distance when the road is wet''. Since the speed oracle is not specified, we quantify the required driving behavior as the speed decrease ratio in a range. *Rules 3*, *4* and *5* test anomalous scenarios where objects suddenly appear in the front and close to the main vehicle, which is similar to *Rule 1* but allow the injection of more types of objects. *Rules 6* and *7* test the impact of different driving scenes on speed.
 
-*Rules 8* and *9* are composite rules that compare the outcome of more than one transformation. Compared with the prior work that test relations between the original input and its modified input, **RMT** makes it easier to test the *compounding*, *proportional effect* of more than one transformation.
+*Rules 8* and *9* are composite rules that compare the outcome of more than one transformation. Compared with the prior work that test relations between the original input and its modified input, **RMT** makes it easier to test the *compounding*, *proportional effect* of more than one transformation. -->
 
 
 <!-- Rules 1 - 5 are for testing speed prediction models. Rule 6 is to test steering angle prediction models. While Rules 1-5 are inequality metamorphic relations, Rule 6 is actually an equality metamorphic relation, created to check how partial disappearance of lanes affects steering angle prediction. 
@@ -81,7 +84,7 @@ In RMT, more diverse rules can be generated by combining existing rules to cover
 + Python libraries like OpenCV, PySimpleGUI, PIL, scipy==1.1.0, dominate.
 
 ## How to use RMT
-This Tutorial will show you how to construct metamorphic testing using UMT for Rule 5: changing to rainy.
+This Tutorial will show you how to construct metamorphic testing using UMT for Rule 7: Changing the driving scenes to rainy day will cause a deceleration by *t<sub>1</sub>%* to *t<sub>2</sub>%*.
 
 First, you need to download the `model_steer.zip` from google drive and extract three models in it into the `./model` folder.
 ```https://drive.google.com/drive/u/1/folders/10xmtotVkSyFtwtCegmzscfQCabViJLbZ```
@@ -100,22 +103,22 @@ In the `./UI` folder run the following code. Currently, this GUI has been tested
 python RMT_UI.py 
 ```
 
-![Framework GUI](asset/main.png)
+![Framework GUI](asset/rmt_ui_new_1.png)
 
 In this interface, in the Metamorphic Rule field, please select `changing weather` for Transformation and `Day2rain(OpenCV)` for Weather. Then please select `Epoch(speed)` for Model Name and click the `Generate` button. After a few seconds, you can get the result of the metamorphic testing.
 
-![Framework testing result](asset/gui_result.png)
+![Framework testing result](asset/rmt_result.png)
 
 ## Overview and usage of the framework
 
-![Workflow of RMT framework](asset/workflow.png)
+![Workflow of RMT framework](asset/rmt_overview_2.png)
 
 The framework takes a *rule* as the input. Based on the input, the framework would find the corresponding generator via `rmt.xml` that would be introduced later and call the generator to generate test sets. Then the framework will test driving models by test sets. We implemented the framework with a GUI.
 
 The user could select rules defined in our paper, the threshold, and the model that needs to test. The framework could automatically select the correorganized sponding generator. Then the framework would generate test sets and the GUI would display a pair of sample images (source image and follow-up image). Finally, the GUI would show the test result.
 
-![Framework GUI](asset/main.png)
-![Framework testing result](asset/gui_result.png)
+![Framework GUI](asset/rmt_ui_new_1.png)
+![Framework testing result](asset/rmt_result.png)
 
 Also, users could change the configs of default rules or add new rules by clicking the 'Config' button. The change of rules is saved in the `rmt.xml`. After clicking the button, 'Save new generator', the new rule will be saved, and it will be added on the main interface.
 
