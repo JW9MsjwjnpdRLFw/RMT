@@ -134,12 +134,29 @@ In this paper, we express 7 Simple Rules (SR):
 ![Framework GUI](asset/rmt_ui_new_1.png)
 ![Framework testing result](asset/rmt_result.png)
 
-Also, users could change the configs of default rules or add new rules by clicking the 'Config' button. The change of rules is saved in the `rmt.xml`. After clicking the button, 'Save new generator', the new rule will be saved, and it will be added on the main interface.
+<!-- Also, users could change the configs of default rules or add new rules by clicking the 'Config' button. The change of rules is saved in the `rmt.xml`. After clicking the button, 'Save new generator', the new rule will be saved, and it will be added on the main interface. -->
 
-![Framework configs](asset/configs.png)
-![Framework newgenerator](asset/add_new_generator.png)
+Also, users could change the configs of default rules or add new rules in the `rmt.xml`, which is organized like following:
 
-Furthermore, the Input_path and Output_path refers to the relative path of the input and output folder of each generator, for example `../source_datasets/original` and `../follow_up_datasets/night`. However, for Pix2Pix generators, because of the special requirement of its model, the Input_path refers to the root of its input folder, for example `../source_datasets`. The Output_path of Pix2Pix is the same with other generators, which is the output folder of itself, for example, `./follow_up_datasets/add_car`.
+```xml
+<config>
+	<generator id="1">
+		<model_name>Pix2pixHD2</model_name>
+		<transformation>Adding</transformation>
+		<object>a vehicle</object>
+		<object_type>object</object_type>
+		<location>In the front</location>
+		<Pre_conditions>There is no coordinates conflict to add a vehicle</Pre_conditions>
+		<model_path>../model</model_path>
+		
+		<input_path>../source_datasets</input_path>
+		<output_path>../follow_up_datasets</output_path>
+		<running_script>python ../generators/pix2pixHD-master/image_control.py --checkpoints_dir ../models --name label2city --add_object car --feature ../generators/pix2pixHD-master/car.npy</running_script>
+	</generator>
+</config>
+```
+
+The Input_path and Output_path refers to the relative path of the input and output folder of each generator, for example `../source_datasets/original` and `../follow_up_datasets/night`. However, for Pix2Pix generators, because of the special requirement of its model, the Input_path refers to the root of its input folder, for example `../source_datasets`. The Output_path of Pix2Pix is the same with other generators, which is the output folder of itself, for example, `./follow_up_datasets/add_car`.
 After the transforming step, two folders will be generated in the Output_path to save the source image and generated image.
 
 
