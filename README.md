@@ -144,7 +144,7 @@ After the transforming step, two folders will be generated in the Output_path to
 
 
 
-### RMT Configuration file
+<!-- ### RMT Configuration file
 
  `rmt.xml` is provided to binding generators and metamorphic rules , which is organized like following:
 
@@ -166,7 +166,7 @@ After the transforming step, two folders will be generated in the Output_path to
 </config>
 ```
 
-Based on the configuration file, the framework could know how to run the generator by the configuration file. The `rmt.xml` of this project is at the root path.
+Based on the configuration file, the framework could know how to run the generator by the configuration file. The `rmt.xml` of this project is at the root path. -->
 
 ### Pretrained models and datasets
 
@@ -174,19 +174,36 @@ The related dataset and pretrained models are saved in the Google Drive Folder:
 
 ```https://drive.google.com/drive/u/1/folders/10xmtotVkSyFtwtCegmzscfQCabViJLbZ```
 
+***重新传一下A2D2和新模型***
+
 ## Dataset
 
-+ In experiments we used Cityscape dataset that is originally used as image segmentation dataset. We choose this dataset because it provides semantic labels for images, which are used by Pix2pix GAN to generate driving scene images and adding objects on images. In the dataset, the training set (2975 frames) and validation set (500) frames have fine-grained semantic labels so we use them as the training set and testing set in our experiments. The dataset is used in two sub-tasks in our experiments.
+In experiments we used *A2D2* dataset, which is published by Audi and contains images extracted from driving videos. It provides many useful labels including class level and instance level semantic labels. Driving scenes vary from urban to country scenes. We could thus apply all rules on this dataset. We used OpenCV to add objects for Rules 1-5 and Rules 8- 9. Similar with Cityscapes, we trained UGATIT for Rules 6-7 and not all frames in the test set are applicable for each metamorphic transformation.
+
+  + Firstly, we use the dataset to train 3 autonomous driving E2E models with different CNN architectures for speed prediction. The inputs are driving scene images and the labels are speeds for each image provided in the dataset.
+  + Secondly, we use the dataset to train transformations like Pix2pixHD GAN, which will be introduced in detail later.
+
+For human evaluation, we used *Cityscape* dataset for rule 3-7, which contains real-world driving road images with cruising speed labels. Because the data is collected from the urban area and speed labels are in general lower than 45 km/h, the dataset is not suitable for applying Rule 1, 8. Also, urban driving scenes are too crowded to add objects both 30 and 50 meters in front of the main vehicle on the same source images as required by Rule 9, thus Rule 9 is not applied on Cityscapes either.
+
+We also use a part of images from BDD100K dataset to train UNIT GAN for transforming day-time driving scenes to night time. We manually random select day-time and night time images to construct the dataset. The detailed training process of UNIT could be seen in the [official github](https://github.com/mingyuliutw/UNIT).
+
+***A2D2的下载和配置***
+
+The cityscape dataset could be downloaded from ```https://www.cityscapes-dataset.com/```. Then the dataset should be re-organized as [pix2pixHD official github](https://github.com/NVIDIA/pix2pixHD) introduces. Before you use the dataset for `UNIT`, `OpenCV` and `UGATIT`, please run the following code to change the image into 224\*224. Please put the source dataset and the formatted dataset in the same root folder. If you use this dataset for `Pix2pix`, you do not need to make changes on this dataset.
+
+```python
+python image_crop.py --input_path <> --output_path <>
+```
+
+<!-- + In experiments we used Cityscape dataset that is originally used as image segmentation dataset. We choose this dataset because it provides semantic labels for images, which are used by Pix2pix GAN to generate driving scene images and adding objects on images. In the dataset, the training set (2975 frames) and validation set (500) frames have fine-grained semantic labels so we use them as the training set and testing set in our experiments. The dataset is used in two sub-tasks in our experiments.
 
   + Firstly, we use the dataset to train 3 autonomous driving E2E models with different CNN architectures for speed prediction. The inputs are driving scene images and the labels are speeds for each image provided in the dataset.
   + Secondly, we use the dataset to train Pix2pixHD GAN, which will be introduced in detail later.
 + We use a part of images from BDD100K dataset to train UNIT GAN for transforming day-time driving scenes to night time. We manually random select day-time and night time images to construct the dataset. The detailed training process of UNIT could be seen in the [official github](https://github.com/mingyuliutw/UNIT).
 
-+ The cityscape dataset could be downloaded from ```https://www.cityscapes-dataset.com/```. Then the dataset should be re-organized as [pix2pixHD official github](https://github.com/NVIDIA/pix2pixHD) introduces. Before you use the dataset for `UNIT`, `OpenCV` and `UGATIT`, please run the following code to change the image into 224\*224. Please put the source dataset and the formatted dataset in the same root folder. If you use this dataset for `Pix2pix`, you do not need to make changes on this dataset.
++ The cityscape dataset could be downloaded from ```https://www.cityscapes-dataset.com/```. Then the dataset should be re-organized as [pix2pixHD official github](https://github.com/NVIDIA/pix2pixHD) introduces. Before you use the dataset for `UNIT`, `OpenCV` and `UGATIT`, please run the following code to change the image into 224\*224. Please put the source dataset and the formatted dataset in the same root folder. If you use this dataset for `Pix2pix`, you do not need to make changes on this dataset. -->
 
-```python
-python image_crop.py --input_path <> --output_path <>
-```
+
 
 
 ## Autonomous driving E2E model training
