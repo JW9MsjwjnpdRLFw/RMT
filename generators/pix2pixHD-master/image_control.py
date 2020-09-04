@@ -136,17 +136,19 @@ def save_image(img, address, name):
 
 if __name__ == "__main__":
     parser = TestOptions()
-    parser.parser.add_argument('--input_path', type=str, default='../../follow_up_datasets')
+    parser.parser.add_argument('--dataset_path', type=str, default='../../follow_up_datasets')
     parser.parser.add_argument('--output_path', type=str, default='../../follow_up_datasets')
     parser.parser.add_argument('--feature', type=str, default='bicycle.npy')
     parser.parser.add_argument('--feature_ex', type=str, default='rider.npy')
+    # parser.parser.add_argument('--x_n', type=str, default='x_n2')
+
 
     opt = parser.parse(save=False)
     opt.nThreads = 1   # test code only supports nThreads = 1
     opt.batchSize = 1  # test code only supports batchSize = 1
     opt.serial_batches = True  # no shuffle
     opt.no_flip = True  # no flip
-    opt.dataroot = opt.input_path
+    opt.dataroot = opt.dataset_path
     # add instance_feat to control image generation
     opt.instance_feat = True
     # opt.use_encoded_image = True
@@ -166,8 +168,8 @@ if __name__ == "__main__":
     webpage = html.HTML(web_dir, 'Experiment = %s, Phase = %s, Epoch = %s' % (opt.name, opt.phase, opt.which_epoch))
 
     model = create_model(opt)
-    source_data_path = os.path.join(opt.output_path, 'source_datasets')
-    follow_up_data_path = os.path.join(opt.output_path, 'follow_up_datasets')
+    source_data_path = os.path.join(os.path.split(opt.output_path)[0], 'x_n1')
+    follow_up_data_path = os.path.join(os.path.split(opt.output_path)[0], 'x_n2')
 
     if not os.path.exists(source_data_path):
         os.makedirs(source_data_path)
@@ -201,18 +203,18 @@ if __name__ == "__main__":
             new_data['label'] = data['label'].clone()
             new_data['image'] = data['image'].clone()
             # feat_map, new_data = remove_object(feat_map, new_data, car_region)
-            if opt.add_object == 'bicycle':
-                could_add, feat_map, new_data = add_object(feat_map, new_data, opt.feature, 33)
+            if opt.object == 'bicycle':
+                could_add, feat_map, new_data = add_object(feat_map, new_data, "../generators/pix2pixHD-master/bicycle.npy", 33)
                 if could_add:
-                    could_add, feat_map, new_data = add_object(feat_map, new_data, opt.feature_ex, 25)
+                    could_add, feat_map, new_data = add_object(feat_map, new_data, "../generators/pix2pixHD-master/rider.npy", 25)
                 else:
                     continue
 
-            elif opt.add_object == 'car':
-                could_add, feat_map, new_data = add_object(feat_map, new_data, opt.feature, 26)
+            elif opt.object == 'vehicle':
+                could_add, feat_map, new_data = add_object(feat_map, new_data, "../generators/pix2pixHD-master/car.npy", 26)
 
-            elif opt.add_object == 'person':
-                could_add, feat_map, new_data = add_object(feat_map, new_data, opt.feature, 24)
+            elif opt.object == 'pedestrian':
+                could_add, feat_map, new_data = add_object(feat_map, new_data, "../generators/pix2pixHD-master/person.npy", 24)
             
             if not could_add:
                 continue

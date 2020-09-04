@@ -4,9 +4,8 @@
     <engine>Pix2pixHD</engine>
     <param name="object" type="fixed" check="1">vehicle</param>
     <param name="orientation" type="fixed" check="0">In the front</param>
-    <param name="orientation" type="fixed" check="0">In the front</param>
     <param name="location" type="input" check="0"></param>   
-    <running_script>python ../generators/pix2pixHD-master/image_control.py --checkpoints_dir ../models --name label2city --add_object car --feature ../generators/pix2pixHD-master/car.npy</running_script>
+    <running_script>python ../generators/pix2pixHD-master/image_control.py --checkpoints_dir ../models --name label2city </running_script>
 </transformation>
 
 <transformation id="2">
@@ -15,7 +14,7 @@
     <param name="object" type="fixed" check="1">pedestrian</param>
     <param name="orientation" type="fixed" check="0">In the front</param>
     <param name="location" type="input" check="0"></param>   
-    <running_script>python ../generators/pix2pixHD-master/image_control.py --checkpoints_dir ../models --name label2city --add_object person --feature ../generators/pix2pixHD-master/person.npy</running_script>
+    <running_script>python ../generators/pix2pixHD-master/image_control.py --checkpoints_dir ../models --name label2city </running_script>
 </transformation>
 
 <transformation id="3">
@@ -24,7 +23,7 @@
     <param name="object" type="fixed" check="1">bicycle</param>
     <param name="orientation" type="fixed" check="0">In the front</param>
     <param name="location" type="input" check="0"></param>   
-    <running_script>python ../generators/pix2pixHD-master/image_control.py --checkpoints_dir ../models --name label2city --add_object bicycle --feature ../generators/pix2pixHD-master/bicycle.npy --feature_ex ../generators/pix2pixHD-master/rider.npy</running_script>
+    <running_script>python ../generators/pix2pixHD-master/image_control.py --checkpoints_dir ../models --name label2city </running_script>
 </transformation>
 
 <transformation id="4">
@@ -70,12 +69,12 @@
     <running_script>python ../generators/UNIT/test_batch.py</running_script>
 </transformation>
 
-<transformation id="7">
+<!-- <transformation id="7">
     <name>ChangeScene</name>
     <engine>UNIT</engine>
     <param name="weather" type="fixed" check="1">Day2rain</param>
-    <running_script></running_script>
-</transformation>
+    <running_script>python ../generators/UNIT/test_batch.py</running_script>
+</transformation> -->
 
 <transformation id="8">
     <name>ChangeScene</name>
@@ -130,41 +129,19 @@
 
 </MUT>
 
-<!-- <MUT>
-    <name>Epoch(Udacity)</name>
-    <class_name>Epoch</class_name>
-    <path></path>
-    <running_script></running_script>
-</MUT>
-
-<MUT>
-    <name>VGG16(Udacity)</name>
-    <class_name>vgg16</class_name>
-    <path></path>
-    <running_script></running_script>
-</MUT>
-
-<MUT>
-    <name>Nvidia(Udacity)</name>
-    <class_name>nvidia</class_name>
-    <path></path>
-    <running_script></running_script>
-</MUT> -->
-
 <MUT>
     <name>Epoch(Cityscapes)</name>
-    <class_name>Epoch_diff</class_name>
-    <class_file>model_a2d2</class_file>
+    <class_name>BaseCNN</class_name>
+    <class_file>model_cityscapes</class_file>
     <distributed>0</distributed>
-
-    <path></path>
+    <path>../models/driving_models/epoch_cityscapes.pt</path>
 
 </MUT>
 
 <MUT>
     <name>VGG16(Cityscapes)</name>
-    <class_name>Vgg16_diff</class_name>
-    <class_file>model_a2d2</class_file>
+    <class_name>build_vgg16</class_name>
+    <class_file>model_cityscapes</class_file>
     <distributed>0</distributed>
     
     <path></path>
@@ -172,8 +149,8 @@
 
 <MUT>
     <name>ResNet101(Cityscapes)</name>
-    <class_name>Resnet101_diff</class_name>
-    <class_file>model_a2d2</class_file>
+    <class_name>build_resnet101</class_name>
+    <class_file>model_cityscapes</class_file>
     <distributed>0</distributed>
 
     <path></path>
@@ -181,8 +158,8 @@
 
 <OTC>
     <name>Cityscapes</name>
-    <path></path>
-    <img_size></img_size>
+    <path>../cityscapes_samples</path>
+    <img_size>224</img_size>
 </OTC>
 
 <!-- <OTC>

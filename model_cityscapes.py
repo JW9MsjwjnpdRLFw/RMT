@@ -151,7 +151,7 @@ class Vgg16(nn.Module):
 
         return out
 
-def build_vgg16(pretrained=True):
+def build_vgg16(pretrained=False):
     model = models.vgg16(pretrained=pretrained)
     if pretrained:
         # for name, child in model.features.named_children():
@@ -191,7 +191,7 @@ def build_resnet(pretrained=True):
     
     return model
 
-def build_resnet101(pretrained=True):
+def build_resnet101(pretrained=False):
     model = models.resnet101(pretrained=pretrained)
     if pretrained:
         for parma in model.parameters():

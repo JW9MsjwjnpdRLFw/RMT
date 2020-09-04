@@ -14,6 +14,8 @@ import torch.nn as nn
 import torch
 from torch.utils.data import DataLoader
 import copy
+import matplotlib.image as mpimg
+import numpy as np
 
 THRESHOLD_LOW = 0.1
 THRESHOLD_HIGH = 0.2
@@ -218,12 +220,18 @@ def resize_img(dataset, x_n):
                     timestamp = image_info["cam_tstamp"]
                     # cv2.imwrite(os.path.join(root_path, "camera_resize", folder, str(timestamp) + '.png'), resize_img)
                     cv2.imwrite(os.path.join("../test_images/" + x_n, str(timestamp) + '.png'), resize_img)
+    elif dataset.name == "Cityscapes":
+        for d in os.listdir(dataset.path):
+            if 'png' in d:
+                img = cv2.imread(os.path.join(dataset.path, d))
+                img = img[0:852, 384:1520]
+                resize_img = cv2.resize(img, (int(dataset.img_size), int(dataset.img_size)))
+                cv2.imwrite(os.path.join("../test_images/" + x_n, d), resize_img)
 
 
 def create_mt_set(dataset, transformations, x_n):
     if len(transformations) == 0:
-        # resize_img(dataset, x_n)
-        pass
+        resize_img(dataset, x_n)
     elif len(transformations) == 1:
         script = transformations[0].running_script
         for param in transformations[0].params:
@@ -322,6 +330,7 @@ if __name__ == "__main__":
             if current_trans.name and current_trans.engine:
                 for transformation in transformation_list:
                     if transformation.name == current_trans.name and transformation.engine == current_trans.engine:
+                        
                         current_trans.params = copy.deepcopy(transformation.params)
                         current_trans.running_script = transformation.running_script
                         break
@@ -398,8 +407,8 @@ if __name__ == "__main__":
             # oracle_range = [values["MRV_Range_low"], values["MRV_Range_high"]]
 
             # create metamorphic test set X_N1 and X_N2
-            # create_mt_set(selected_dataset, trans_for_x1, "x_n1")
-            # create_mt_set(selected_dataset, trans_for_x2, "x_n2")
+            create_mt_set(selected_dataset, trans_for_x1, "x_n1")
+            create_mt_set(selected_dataset, trans_for_x2, "x_n2")
 
             # load driving models 
             driving_model_module = __import__(selected_model.class_file)
@@ -422,6 +431,25 @@ if __name__ == "__main__":
                 mt_set_x1 = A2D2MT(root_path, mt_path="../test_images/x_n1", mode="self")
                 mt_set_x2 = A2D2MT(root_path, mt_path="../test_images/x_n2", mode="self")
                 pred_x1, pred_x2 = make_predictions_a2d2(driving_model, mt_set_x1, mt_set_x2)
+            elif selected_dataset.name == "Cityscapes":
+                pred_x1 = []
+                pred_x2 = []
+                for img_name in os.listdir("../test_images/x_n1"):
+                    x_1 = mpimg.imread(os.path.join("../test_images/x_n1", img_name))
+                    x_2 = mpimg.imread(os.path.join("../test_images/x_n2", img_name))
+                    if np.max(x_1) > 1:
+                        x_1 = x_1 / 255.
+                    img_tensor_1 = torch.from_numpy(np.transpose(x_1, (-1, 0, 1))).unsqueeze(0)
+                    img_tensor_1 = img_tensor_1.type(torch.FloatTensor)
+                    img_tensor_1 = img_tensor_1.to(device)
+                    if np.max(x_2) > 1:
+                        x_2 = x_2 / 255.
+                    img_tensor_2 = torch.from_numpy(np.transpose(x_2, (-1, 0, 1))).unsqueeze(0)
+                    img_tensor_2 = img_tensor_2.type(torch.FloatTensor)
+                    img_tensor_2 = img_tensor_2.to(device)
+                    pred_x1.append(driving_model(img_tensor_1).item())
+                    pred_x2.append(driving_model(img_tensor_2).item())
+
             # create metamorphic relation
             relation_function = lambda X_N1, X_N2: eval(values["MRV_RF"])
             total = len(pred_x1)

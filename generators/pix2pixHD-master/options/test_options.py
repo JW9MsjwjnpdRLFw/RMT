@@ -15,7 +15,7 @@ class TestOptions(BaseOptions):
         self.parser.add_argument("--engine", type=str, help="run serialized TRT engine")
         self.parser.add_argument("--onnx", type=str, help="run ONNX model via TRT")        
         self.isTrain = False
-        self.parser.add_argument("--add_object", type=str, default='car', help='object to add on images')
+        self.parser.add_argument("--object", type=str, default='vehicle', help='object to add on images')
         # self.parser.add_argument("--img_name", type=str, help='proper reference images')
         # self.parser.add_argument("--position_x", type=int, help='reference instance position_x')
         # self.parser.add_argument("--position_y", type=int, help='reference instance position_y')

@@ -21,7 +21,7 @@ import os
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='../generators/UNIT/configs/unit_day2night.yaml', help='Path to the config file.')
 # parser.add_argument('--config', type=str, default='../generators/UNIT/test_batch.py', help='Path to the config file.')
-parser.add_argument('--input_path', type=str, help="input image folder")
+parser.add_argument('--dataset_path', type=str, help="input image folder")
 parser.add_argument('--output_path', type=str, help="output image folder")
 parser.add_argument('--checkpoint', type=str, help="checkpoint of autoencoders")
 parser.add_argument('--a2b', type=int, help="1 for a2b and others for b2a", default=1)
@@ -31,17 +31,25 @@ parser.add_argument('--synchronized', action='store_true', help="whether use syn
 parser.add_argument('--output_only', action='store_true', help="whether use synchronized style code or not")
 parser.add_argument('--weight', type=str, default='.', help="path for logs, checkpoints, and VGG model weight")
 parser.add_argument('--trainer', type=str, default='MUNIT', help="MUNIT|UNIT")
+parser.add_argument('--weather', type=str)
 
 opts = parser.parse_args()
 
 
-opts.trainer = 'UNIT'
-opts.checkpoint = "../models/gen.pt"
+if opts.weather == "Day2night":
+    opts.checkpoint = "../models/unit_day2night.pt"
+    opts.trainer = 'UNIT'
+
+elif opts.weather == "Day2rain":
+    opts.checkpoint = "../models/unit_day2rain.pt"
+    opts.trainer = 'MUNIT'
+
+# opts.checkpoint = "../models/gen.pt"
 # opts.input_path = "../test_img"
 # opts.output_path = "../follow_up_datasets/temp"
 opts.output_only = True
 
-print(opts.input_path)
+print(opts.dataset_path)
 print(opts.output_path)
 if not os.path.exists(opts.output_path):
     os.makedirs(opts.output_path)
@@ -54,8 +62,8 @@ config = get_config(opts.config)
 input_dim = config['input_dim_a'] if opts.a2b else config['input_dim_b']
 
 # Setup model and data loader
-image_names = ImageFolder(opts.input_path, transform=None, return_paths=True)
-data_loader = get_data_loader_folder(opts.input_path, 1, False, new_size=config['new_size'], crop=False)
+image_names = ImageFolder(opts.dataset_path, transform=None, return_paths=True)
+data_loader = get_data_loader_folder(opts.dataset_path, 1, False, new_size=config['new_size'], crop=False)
 # data_loader = get_data_loader_folder(opts.input_path, 1, False, crop=False)
 
 config['vgg_model_path'] = opts.weight
@@ -104,23 +112,23 @@ if opts.trainer == 'MUNIT':
             vutils.save_image(images.data, os.path.join(opts.output_path, 'input{:03d}.jpg'.format(i)), padding=0, normalize=True)
 elif opts.trainer == 'UNIT':
     # Start testing
-    if not os.path.exists(os.path.join(opts.output_path, 'source_datasets')):
-        os.makedirs(os.path.join(opts.output_path, 'source_datasets'))
+    # if not os.path.exists(os.path.join(opts.output_path, 'source_datasets')):
+    #     os.makedirs(os.path.join(opts.output_path, 'source_datasets'))
 
-    if not os.path.exists(os.path.join(opts.output_path, 'follow_up_datasets')):
-        os.makedirs(os.path.join(opts.output_path, 'follow_up_datasets'))
+    # if not os.path.exists(os.path.join(opts.output_path, 'follow_up_datasets')):
+    #     os.makedirs(os.path.join(opts.output_path, 'follow_up_datasets'))
 
     for i, (images, names) in enumerate(zip(data_loader, image_names)):
         print(names[1])
         basename = os.path.basename(names[1])
-        vutils.save_image(images, os.path.join(opts.output_path, "source_datasets", basename), padding=0, normalize=True)
+        # vutils.save_image(images, os.path.join(opts.output_path, "source_datasets", basename), padding=0, normalize=True)
         images = Variable(images.cuda(), volatile=True)
         content, _ = encode(images)
 
         outputs = decode(content)
         outputs = (outputs + 1) / 2.
         # path = os.path.join(opts.output_path, 'input{:03d}_output{:03d}.jpg'.format(i, j))
-        path = os.path.join(opts.output_path, "follow_up_datasets", basename)
+        path = os.path.join(opts.output_path, basename)
         # if not os.path.exists(os.path.dirname(path)):
         #     os.makedirs(os.path.dirname(path))
         vutils.save_image(outputs.data, path, padding=0, normalize=True)
