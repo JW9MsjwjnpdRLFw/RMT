@@ -238,8 +238,9 @@ def create_mt_set(dataset, transformations, x_n):
             if param.check == "1":
                 script += " --%s %s" % (param.name, param.value)
         if transformations[0].name == "ChangeScene":
-            resize_img(dataset, x_n)
+            # resize_img(dataset, x_n)
             script += " --dataset_path %s --output_path %s" % ("../test_images/" + x_n, "../test_images/" + x_n)
+            print(script)
             os.system(script)
         else:
             script += " --dataset_path %s --output_path %s" % (dataset.path, "../test_images/" + x_n)

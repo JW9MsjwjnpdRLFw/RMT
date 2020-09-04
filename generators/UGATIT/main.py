@@ -39,6 +39,7 @@ def parse_args():
     parser.add_argument('--dataset_path', type=str)
     parser.add_argument('--output_path', type=str)
     parser.add_argument('--x_n', type=str, default="../")
+    parser.add_argument('--weather', type=str, default="Day2rain")
     return check_args(parser.parse_args())
 
 """checking arguments"""
@@ -67,7 +68,11 @@ def main():
     args = parse_args()
     if args is None:
       exit()
-
+    
+    if args.weather == "Day2rain":
+        args.dataset = "day2rain"
+    elif args.weather == "Day2night":
+        args.dataset = "day2night"
     # open session
     gan = UGATIT(args)
 
@@ -80,6 +85,7 @@ def main():
         print(" [*] Training finished!")
 
     if args.phase == 'test' :
+
         gan.generate(args.dataset_path, args.output_path)
         print(" [*] Test finished!")
 

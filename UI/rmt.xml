@@ -86,15 +86,15 @@
 <transformation id="9">
     <name>ChangeScene</name>
     <engine>UGATIT</engine>
-    <param name="weather" type="fixed" check="0">Day2rain</param>
-    <running_script>python  ../generators/UGATIT/main.py --dataset day2rain --phase test --light True --img_size 224</running_script>
+    <param name="weather" type="fixed" check="1">Day2rain</param>
+    <running_script>python  ../generators/UGATIT/main.py --phase test --light True --img_size 224</running_script>
 </transformation>
 
 <transformation id="10">
     <name>ChangeScene</name>
     <engine>UGATIT</engine>
-    <param name="weather" type="fixed" check="0">Day2night</param>
-    <running_script>python  ../generators/UGATIT/main.py --dataset day2night --phase test --light True --img_size 224</running_script>
+    <param name="weather" type="fixed" check="1">Day2night</param>
+    <running_script>python  ../generators/UGATIT/main.py --phase test --light True --img_size 224</running_script>
 </transformation>
 
 <!-- <transformation id="10">
