@@ -238,7 +238,7 @@ def create_mt_set(dataset, transformations, x_n):
             if param.check == "1":
                 script += " --%s %s" % (param.name, param.value)
         if transformations[0].name == "ChangeScene":
-            # resize_img(dataset, x_n)
+            resize_img(dataset, x_n)
             script += " --dataset_path %s --output_path %s" % ("../test_images/" + x_n, "../test_images/" + x_n)
             print(script)
             os.system(script)
@@ -288,6 +288,13 @@ def get_output_layout(mt_result):
         [sg.OK(key="result_ok")]
     ]
     return out_layout
+def clear_test_images():
+    img_list = os.listdir("../test_images/x_n1")
+    for img_name in img_list:
+        os.remove(os.path.join("../test_images/x_n1", img_name))
+    img_list = os.listdir("../test_images/x_n2")
+    for img_name in img_list:
+        os.remove(os.path.join("../test_images/x_n2", img_name))
 
 if __name__ == "__main__":
     device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
@@ -393,6 +400,7 @@ if __name__ == "__main__":
             input_window["Remove2"].update(visible=False)
             input_window["Trans2"].update("Transformations for X_N2: None")
         elif button == "Generate test":
+            clear_test_images()
             # read MRV settings
             # test_mode = values["MRV_pair_type"]
             selected_dataset = None
