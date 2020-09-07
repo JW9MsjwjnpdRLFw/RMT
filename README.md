@@ -106,7 +106,6 @@ The framework takes a *rule* as the input. Based on the input, the framework wou
 The user could select rules defined in our paper, the threshold, and the model that needs to test. The framework could automatically select the correorganized sponding generator. Then the framework would generate test sets and the GUI would display a pair of sample images (source image and follow-up image). Finally, the GUI would show the test result.
 
 For higher order function for each rule, we has few recommandation:
-In this paper, we express 7 Simple Rules (SR): 
 - **Rule 1**: M(X_N) < 60
 - **Rule 2**: M(X_N) < 30
 - **Rule 3**: 30 < (M(XN1) - M(XN2))=(M(XN1)) < 30
@@ -116,6 +115,137 @@ In this paper, we express 7 Simple Rules (SR):
 - **Rule 7**: 10 < (M(XN1) - M(XN2))=(M(XN1)) < 20
 - **Rule 8**: 0 < (M(XN1) - M(XN2))=(M(XN1)) < 45
 - **Rule 9**: (M(XN1) - M(XN2)) < 0
+
+
+<table>
+	<tr>
+	    <th></th>
+	    <th>Trans</th>
+	    <th>Engine</th> 
+        <th>Apply For</th> 
+        <th>Dataset</th> 
+        <th>High order</th>  
+	</tr >
+    <tr >
+        <td>RULE 1</td>
+        <td>Inject</td>	
+        <td>OpenCV</td>	
+        <td>XN_2</td>
+        <td>a2d2</td>
+        <td>X_N2 < 60</td>
+    </tr >
+    <tr >
+        <td>RULE 2</td>
+        <td>Inject</td>	
+        <td>OpenCV</td>	
+        <td>XN_2</td>
+        <td>a2d2</td>
+        <td>X_N2 < 30</td>
+    </tr >
+    <tr >
+        <td>RULE 3</td>
+        <td>Inject</td>	
+        <td>Pix2pixHD</td>	
+        <td>XN_2</td>
+        <td>cityscape</td>
+        <td rowspan="2">30 < (XN1 - XN2)/XN1 < 40</td>
+    </tr >
+    <tr >
+        <td></td>
+        <td>Inject</td>	
+        <td>OpenCV</td>	
+        <td>XN_2</td>	
+        <td>a2d2</td>	
+    </tr >
+    <tr >
+    <td>RULE 4</td>
+    <td>Inject</td>	
+    <td>Pix2pixHD</td>	
+    <td>XN_2</td>
+    <td>cityscape</td>
+    <td rowspan="2">40 < (XN1 - XN2)/XN1 < 50</td>
+    </tr >
+    <tr >
+    <td></td>
+    <td>Inject</td>	
+    <td>OpenCV</td>	
+    <td>XN_2</td>	
+    <td>a2d2</td>	
+    </tr >
+    <tr >
+    <td>RULE 5</td>
+    <td>Inject</td>	
+    <td>Pix2pixHD</td>	
+    <td>XN_2</td>
+    <td>cityscape</td>
+    <td rowspan="2">60 < (XN1 - XN2)/XN1 < 70</td>
+    </tr >
+    <tr >
+    <td></td>
+    <td>Inject</td>	
+    <td>OpenCV</td>	
+    <td>XN_2</td>	
+    <td>a2d2</td>	
+    </tr >
+    <tr >
+    <td>RULE 6</td>
+    <td>changeScene</td>	
+    <td>Unit</td>	
+    <td>XN_2</td>
+    <td>cityscapes</td>
+    <td rowspan="2">0 < (XN1 - XN2)/XN1 < 10</td>
+    </tr >
+    <tr >
+    <td></td>
+    <td>changeScene</td>	
+    <td>UGATIT</td>	
+    <td>XN_2</td>	
+    <td>a2d2</td>	
+    </tr >
+    <tr >
+    <td>RULE 7</td>
+    <td>changeScene</td>	
+    <td>Unit</td>	
+    <td>XN_2</td>
+    <td>cityscapes</td>
+    <td rowspan="2">10 < (XN1 - XN2)/XN1 < 20</td>
+    </tr >
+    <tr >
+    <td></td>	
+    <td>changeScene</td>	
+    <td>UGATIT</td>	
+    <td>XN_2</td>	
+    <td>a2d2</td>
+    </tr >
+    <tr >
+    <td>RULE 8 Step1</td>	
+    <td>Inject</td>	
+    <td>OpenCV</td>	
+    <td>XN_2</td>	
+    <td rowspan="2">a2d2</td>	
+    <td rowspan="2">0 < (XN1 - XN2)/XN1 < 45</td>
+    </tr >
+    <tr >
+    <td>RULE 8 Step2</td>
+    <td>changeScene</td>	
+    <td>UGATIT</td>	
+    <td>XN_2</td>
+    </tr >
+    <tr >	
+    <td>RULE 9 Step1</td>	
+    <td>changeScene</td>	
+    <td>OpenCV</td>	
+    <td>XN_1</td>	
+    <td rowspan="2">a2d2</td>	
+    <td rowspan="2">XN1 - XN2 < 0</td>
+    </tr >
+    <tr >
+    <td>RULE 9 Step2</td>	
+    <td>changeScene</td>	
+    <td>OpenCV</td>	
+    <td>XN_2</td>		
+    </tr >
+</table>
 
 
 <!-- Also, users could change the configs of default rules or add new rules by clicking the 'Config' button. The change of rules is saved in the `rmt.xml`. After clicking the button, 'Save new generator', the new rule will be saved, and it will be added on the main interface. -->
