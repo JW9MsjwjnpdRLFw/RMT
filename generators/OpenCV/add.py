@@ -62,5 +62,7 @@ if __name__ == "__main__":
             mask = "../generators/OpenCV/car_50.png"
         elif args.location == 30:
             mask = "../generators/OpenCV/car_30.png"
+    elif args.object == "traffic_sign":
+        mask = "../generators/OpenCV/speed_30.png"
     print(mask)
     gen_data(mask, args.dataset_path,args.output_path, args.img_size)

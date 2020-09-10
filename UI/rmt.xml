@@ -56,7 +56,7 @@
 <transformation id="5">
     <name>Inject</name>
     <engine>OpenCV</engine>
-    <param name="object" type="fixed" check="1">traffic sign</param>
+    <param name="object" type="fixed" check="1">traffic_sign</param>
     <param name="orientation" type="fixed" check="0">At the roadside</param>
     <param name="location" type="input" check="0"></param>   
     <running_script>python ../generators/Opencv/add.py </running_script>
