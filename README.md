@@ -138,7 +138,7 @@ To imply each rule in the paper, we has few recommandation:
         <td>Pix2pixHD</td>	
         <td>X_N2</td>
         <td>cityscape</td>
-        <td rowspan="2">30 < (X_N1 - X_N2)/X_N1 < 40</td>
+        <td rowspan="2">0.3 < (X_N1 - X_N2)/X_N1 < 0.4</td>
     </tr >
     <tr >
         <td></td>
@@ -153,7 +153,7 @@ To imply each rule in the paper, we has few recommandation:
     <td>Pix2pixHD</td>	
     <td>X_N2</td>
     <td>cityscape</td>
-    <td rowspan="2">40 < (X_N1 - X_N2)/X_N1 < 50</td>
+    <td rowspan="2">0.4 < (X_N1 - X_N2)/X_N1 < 0.5</td>
     </tr >
     <tr >
     <td></td>
@@ -168,7 +168,7 @@ To imply each rule in the paper, we has few recommandation:
     <td>Pix2pixHD</td>	
     <td>X_N2</td>
     <td>cityscape</td>
-    <td rowspan="2">60 < (X_N1 - X_N2)/X_N1 < 70</td>
+    <td rowspan="2">0.6 < (X_N1 - X_N2)/X_N1 < 0.7</td>
     </tr >
     <tr >
     <td></td>
@@ -183,7 +183,7 @@ To imply each rule in the paper, we has few recommandation:
     <td>Unit</td>	
     <td>X_N2</td>
     <td>cityscapes</td>
-    <td rowspan="2">0 < (X_N1 - X_N2)/X_N1 < 10</td>
+    <td rowspan="2">0 < (X_N1 - X_N2)/X_N1 < 0.1</td>
     </tr >
     <tr >
     <td></td>
@@ -198,7 +198,7 @@ To imply each rule in the paper, we has few recommandation:
     <td>Unit</td>	
     <td>X_N2</td>
     <td>cityscapes</td>
-    <td rowspan="2">10 < (X_N1 - X_N2)/X_N1 < 20</td>
+    <td rowspan="2">0.1 < (X_N1 - X_N2)/X_N1 < 0.2</td>
     </tr >
     <tr >
     <td></td>	
@@ -213,7 +213,7 @@ To imply each rule in the paper, we has few recommandation:
     <td>OpenCV</td>	
     <td>X_N2</td>	
     <td rowspan="2">a2d2</td>	
-    <td rowspan="2">0 < (X_N1 - X_N2)/X_N1 < 45</td>
+    <td rowspan="2">0 < X_N1 - X_N2 < 45</td>
     </tr >
     <tr >
     <td>RULE 8 Step2</td>
