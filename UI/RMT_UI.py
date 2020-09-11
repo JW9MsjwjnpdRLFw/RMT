@@ -443,9 +443,12 @@ if __name__ == "__main__":
             elif selected_dataset.name == "Cityscapes":
                 pred_x1 = []
                 pred_x2 = []
-                for img_name in os.listdir("../test_images/x_n1"):
-                    x_1 = mpimg.imread(os.path.join("../test_images/x_n1", img_name))
-                    x_2 = mpimg.imread(os.path.join("../test_images/x_n2", img_name))
+                for img_name in os.listdir("../test_images/x_n2"):
+                    try:
+                        x_1 = mpimg.imread(os.path.join("../test_images/x_n1", img_name))
+                        x_2 = mpimg.imread(os.path.join("../test_images/x_n2", img_name))
+                    except:
+                        continue
                     if np.max(x_1) > 1:
                         x_1 = x_1 / 255.
                     img_tensor_1 = torch.from_numpy(np.transpose(x_1, (-1, 0, 1))).unsqueeze(0)
