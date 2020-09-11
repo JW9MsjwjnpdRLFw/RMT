@@ -223,7 +223,7 @@ To imply each rule in the paper, we has few recommandation:
     </tr >
     <tr >	
     <td>RULE 9 Step1</td>	
-    <td>changeScene</td>	
+    <td>Inject</td>	
     <td>OpenCV</td>	
     <td>X_N1</td>	
     <td rowspan="2">a2d2</td>	
@@ -231,7 +231,7 @@ To imply each rule in the paper, we has few recommandation:
     </tr >
     <tr >
     <td>RULE 9 Step2</td>	
-    <td>changeScene</td>	
+    <td>Inject</td>	
     <td>OpenCV</td>	
     <td>X_N2</td>		
     </tr >
